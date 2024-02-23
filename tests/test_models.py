@@ -5,7 +5,7 @@ import os
 import logging
 from unittest import TestCase
 from wsgi import app
-from service.models import YourResourceModel, DataValidationError, db
+from service.models import ShopCart, DataValidationError, db
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -13,11 +13,11 @@ DATABASE_URI = os.getenv(
 
 
 ######################################################################
-#  YourResourceModel   M O D E L   T E S T   C A S E S
+#  ShopCart   M O D E L   T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceModel(TestCase):
-    """ Test Cases for YourResourceModel Model """
+class TestShopCartModel(TestCase):
+    """ Test Cases for ShopCart Model """
 
     @classmethod
     def setUpClass(cls):
@@ -35,7 +35,7 @@ class TestYourResourceModel(TestCase):
 
     def setUp(self):
         """This runs before each test"""
-        db.session.query(YourResourceModel).delete()  # clean up the last tests
+        db.session.query(ShopCart).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):

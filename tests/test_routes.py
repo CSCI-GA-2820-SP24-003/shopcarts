@@ -6,7 +6,9 @@ import logging
 from unittest import TestCase
 from wsgi import app
 from service.common import status
-from service.models import db, YourResourceModel
+from service.models import db, ShopCart
+import factory
+import json
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -17,7 +19,7 @@ DATABASE_URI = os.getenv(
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceService(TestCase):
+class TestShopCartService(TestCase):
     """ REST API Server Tests """
 
     @classmethod
@@ -38,7 +40,7 @@ class TestYourResourceService(TestCase):
     def setUp(self):
         """Runs before each test"""
         self.client = app.test_client()
-        db.session.query(YourResourceModel).delete()  # clean up the last tests
+        db.session.query(ShopCart).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
@@ -55,3 +57,18 @@ class TestYourResourceService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     # Todo: Add your test cases here...
+    def test_create_shopcart(self):
+        """It should create a ShopCart"""
+        #user_id = factory.Sequence(lambda n: 100)
+        #name = factory.Sequence(lambda n: 1000)
+        new_cart = {"id": "5", "name": "6"}
+        #check if create successfully
+        response = self.client.post("/shopcarts", json=new_cart)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        #check if data is correct 
+        res_cart = response.get_json()
+        self.assertEqual(res_cart["name"], new_cart["name"])
+        #self.assertEqual(res_cart["id"], new_cart.id)
+        
+        

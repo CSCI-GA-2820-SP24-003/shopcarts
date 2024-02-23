@@ -23,9 +23,9 @@ and Delete Pets from the inventory of pets in the PetShop
 
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import ShopCart
 from service.common import status  # HTTP Status Codes
-
+import factory
 
 ######################################################################
 # GET INDEX
@@ -44,3 +44,15 @@ def index():
 ######################################################################
 
 # Todo: Place your REST API code here ...
+@app.route("/shopcarts", methods=["POST"])
+def create_shopcarts():
+    """Creates a shopcart"""
+    app.logger.info("Request to create shopcart")
+    
+    new_cart = ShopCart()
+    new_cart.deserialize(request.get_json())
+    new_cart.create()
+    message = new_cart.serialize()
+    
+    app.logger.info("Shopcart with id: %s name: %s created.", new_cart.id, new_cart.name)
+    return jsonify(message), status.HTTP_201_CREATED
