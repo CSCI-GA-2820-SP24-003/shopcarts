@@ -69,6 +69,8 @@ class ShopCart(db.Model):
         Updates a ShopCart to the database
         """
         logger.info("Saving %s", self.name)
+        if not self.id or not self.user_id:
+            raise DataValidationError("Update called with empty ID or USER_ID field")
         try:
             db.session.commit()
         except Exception as e:
@@ -87,14 +89,14 @@ class ShopCart(db.Model):
             logger.error("Error deleting record: %s", self)
             raise DataValidationError(e) from e
 
-    def serialize(self):
+    def serialize(self) -> dict:
         """Serializes a ShopCart into a dictionary"""
         return {
             "id": self.id,
             "user_id": self.user_id,
             "name": self.name,
             "total_price": self.total_price,
-            "status": self.status,
+            "status": self.status.name,
         }
 
     def deserialize(self, data):
@@ -105,7 +107,10 @@ class ShopCart(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
+            self.user_id = data["user_id"]
             self.name = data["name"]
+            self.total_price = data["total_price"]
+            self.status = getattr(ShopCartStatus, data["status"])
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
