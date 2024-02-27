@@ -1,5 +1,5 @@
 """
-TestYourResourceModel API Service Test Suite
+Shop Cart API Service Test Suite
 """
 
 import os
@@ -8,17 +8,20 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
+from .factories import ShopCartFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
+
+BASE_URL = "/shopcarts"
 
 
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceService(TestCase):
+class ShopCartService(TestCase):
     """REST API Server Tests"""
 
     @classmethod
@@ -47,7 +50,28 @@ class TestYourResourceService(TestCase):
         db.session.remove()
 
     ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
+    #  H E L P E R   F U N C T I O N S
+    ######################################################################
+
+    def _create_shopcarts(self, batch_size):
+        """Factory method to create shop carts in bulk"""
+        shop_carts = []
+        for _ in range(batch_size):
+            shop_cart = ShopCartFactory()
+            resp = self.client.post(BASE_URL, json=shop_cart.serialize())
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test shop cart",
+            )
+            new_shop_cart = resp.get_json()
+            shop_cart.id = new_shop_cart["id"]
+            shop_carts.append(shop_cart)
+
+        return shop_carts
+
+    ######################################################################
+    #  S H O P   C A R T   T E S T   C A S E S
     ######################################################################
 
     def test_index(self):
@@ -55,4 +79,10 @@ class TestYourResourceService(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    # Todo: Add your test cases here...
+    def test_list_shopcarts(self):
+        """It should get a list of shop carts"""
+        self._create_shopcarts(10)
+        resp = self.client.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 10)

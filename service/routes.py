@@ -21,7 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Shop Carts
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.models import ShopCart
 from service.common import status  # HTTP Status Codes
@@ -43,4 +43,16 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 
-# Todo: Place your REST API code here ...
+
+######################################################################
+#  L I S T  S H O P C A R T S  E N D P O I N T
+######################################################################
+@app.route("/shopcarts", methods=["GET"])
+def list_shopcarts():
+    """List all shop carts"""
+    app.logger.info("Request for Shop Cart list")
+    shop_carts = ShopCart.all()
+
+    results = [shop_cart.serialize() for shop_cart in shop_carts]
+
+    return jsonify(results), status.HTTP_200_OK
