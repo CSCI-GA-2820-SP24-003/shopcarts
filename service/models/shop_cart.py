@@ -1,21 +1,11 @@
 """
-Models for ShopCarts Service
+Shop Cart Model
 
-All of the models are stored in this module
 """
 
-import logging
 from enum import Enum
-from flask_sqlalchemy import SQLAlchemy
-
-logger = logging.getLogger("flask.app")
-
-# Create the SQLAlchemy object to be initialized later in init_db()
-db = SQLAlchemy()
-
-
-class DataValidationError(Exception):
-    """Used for an data validation errors when deserializing"""
+from .persistent_base import db, logger, DataValidationError, PersistentBase
+from .shop_cart_item import ShopCartItem
 
 
 class ShopCartStatus(Enum):
@@ -29,7 +19,7 @@ class ShopCartStatus(Enum):
     INACTIVE = 3
 
 
-class ShopCart(db.Model):
+class ShopCart(db.Model, PersistentBase):
     """
     Class that represents a ShopCart
     """
@@ -46,58 +36,24 @@ class ShopCart(db.Model):
             ShopCartStatus, nullable=False, server_default=(ShopCartStatus.ACTIVE.name)
         )
     )
+    items = db.relationship("ShopCartItem", backref="shop_cart", passive_deletes=True)
 
     def __repr__(self):
         return f"<ShopCart {self.name} id=[{self.id}]>"
 
-    def create(self):
-        """
-        Creates a ShopCart to the database
-        """
-        logger.info("Creating %s", self.name)
-        self.id = None  # pylint: disable=invalid-name
-        try:
-            db.session.add(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error creating record: %s", self)
-            raise DataValidationError(e) from e
-
-    def update(self):
-        """
-        Updates a ShopCart to the database
-        """
-        logger.info("Saving %s", self.name)
-        if not self.id or not self.user_id:
-            raise DataValidationError("Update called with empty ID or USER_ID field")
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error updating record: %s", self)
-            raise DataValidationError(e) from e
-
-    def delete(self):
-        """Removes a ShopCart from the data store"""
-        logger.info("Deleting %s", self.name)
-        try:
-            db.session.delete(self)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error("Error deleting record: %s", self)
-            raise DataValidationError(e) from e
-
     def serialize(self) -> dict:
         """Serializes a ShopCart into a dictionary"""
-        return {
+        shop_cart = {
             "id": self.id,
             "user_id": self.user_id,
             "name": self.name,
             "total_price": self.total_price,
             "status": self.status.name,
+            "items": [],
         }
+        for item in self.items:
+            shop_cart["items"].append(item.serialize())
+        return shop_cart
 
     def deserialize(self, data):
         """
@@ -111,6 +67,11 @@ class ShopCart(db.Model):
             self.name = data["name"]
             self.total_price = data["total_price"]
             self.status = getattr(ShopCartStatus, data["status"])
+            item_list = data.get("items")
+            for json_item in item_list:
+                item = ShopCartItem()
+                item.deserialize(json_item)
+                self.items.append(item)
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:

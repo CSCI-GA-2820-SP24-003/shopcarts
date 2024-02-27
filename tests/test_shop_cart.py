@@ -7,7 +7,13 @@ import logging
 from unittest import TestCase
 from unittest.mock import patch
 from wsgi import app
-from service.models import DataValidationError, ShopCart, ShopCartStatus, db
+from service.models import (
+    db,
+    DataValidationError,
+    ShopCart,
+    ShopCartStatus,
+    ShopCartItem,
+)
 from tests.factories import ShopCartFactory
 
 DATABASE_URI = os.getenv(
@@ -16,11 +22,10 @@ DATABASE_URI = os.getenv(
 
 
 ######################################################################
-#                   B A S E   T E S T   C A S E S
+#  M O D E L S  T E S T   C A S E S
 ######################################################################
-# pylint: disable=too-many-public-methods
-class TestCaseBase(TestCase):
-    """Test Cases for ShopCart Model"""
+class TestShopCart(TestCase):
+    """Shop Cart Model CRUD Tests"""
 
     @classmethod
     def setUpClass(cls):
@@ -39,18 +44,12 @@ class TestCaseBase(TestCase):
     def setUp(self):
         """This runs before each test"""
         db.session.query(ShopCart).delete()  # clean up the last tests
+        db.session.query(ShopCartItem).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
         """This runs after each test"""
         db.session.remove()
-
-
-######################################################################
-#  M O D E L S  T E S T   C A S E S
-######################################################################
-class TestShopCartModel(TestCaseBase):
-    """Shop Cart Model CRUD Tests"""
 
     ######################################################################
     #  T E S T   C A S E S
@@ -91,8 +90,10 @@ class TestShopCartModel(TestCaseBase):
         self.assertIsNotNone(shop_cart.id)
         # Find Shop Cart By id
         found_shop_cart = ShopCart.find(shop_cart.id)
+        print(found_shop_cart)
         self.assertEqual(found_shop_cart.id, shop_cart.id)
         self.assertEqual(found_shop_cart.user_id, shop_cart.user_id)
+        self.assertEqual(found_shop_cart.items, [])
 
     def test_update_shop_cart(self):
         """It should update a Shop Cart"""
@@ -134,18 +135,22 @@ class TestShopCartModel(TestCaseBase):
     def test_serialize_shop_cart(self):
         """It should serialize a Shop Cart"""
         shop_cart = ShopCartFactory()
+        shop_cart_item = ShopCartItem()
+        shop_cart.items.append(shop_cart_item)
         data = shop_cart.serialize()
         self.assertNotEqual(data, None)
-        self.assertIn("id", data)
         self.assertEqual(data["id"], shop_cart.id)
-        self.assertIn("user_id", data)
         self.assertEqual(data["user_id"], shop_cart.user_id)
-        self.assertIn("name", data)
         self.assertEqual(data["name"], shop_cart.name)
-        self.assertIn("total_price", data)
         self.assertEqual(data["total_price"], shop_cart.total_price)
-        self.assertIn("status", data)
         self.assertEqual(data["status"], shop_cart.status.name)
+        self.assertEqual(len(data["items"]), 1)
+        items = data["items"]
+        self.assertEqual(items[0]["id"], shop_cart_item.id)
+        self.assertEqual(items[0]["product_id"], shop_cart_item.product_id)
+        self.assertEqual(items[0]["shop_cart_id"], shop_cart_item.shop_cart_id)
+        self.assertEqual(items[0]["quantity"], shop_cart_item.quantity)
+        self.assertEqual(items[0]["price"], shop_cart_item.price)
 
     def test_deserialize_shop_cart(self):
         """It should deserialize a Shop Cart"""
@@ -191,7 +196,7 @@ class TestShopCartModel(TestCaseBase):
 ######################################################################
 #  Q U E R Y  T E S T   C A S E S
 ######################################################################
-class TestModelQueries(TestCaseBase):
+class TestModelQueries(TestCase):
     """Shop Cart Model Query Tests"""
 
     def test_find_by_name(self):
@@ -208,7 +213,7 @@ class TestModelQueries(TestCaseBase):
 ######################################################################
 #  E X C E P T I O N S  T E S T   C A S E S
 ######################################################################
-class TestExceptionHandlers(TestCaseBase):
+class TestExceptionHandlers(TestCase):
     """Shop Cart Model Exception Handlers"""
 
     @patch("service.models.db.session.commit")
