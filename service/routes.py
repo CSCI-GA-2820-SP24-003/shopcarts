@@ -15,16 +15,20 @@
 ######################################################################
 
 """
-Pet Store Service
+Shop Cart Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete Pets from the inventory of pets in the PetShop
+and Delete Shop Carts
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
+<<<<<<< HEAD
 from service.models.shopcart import Shopcart
 from service.models.item import Item
+=======
+from service.models import ShopCart
+>>>>>>> master
 from service.common import status  # HTTP Status Codes
 
 
@@ -54,7 +58,6 @@ def index():
 ######################################################################
 
 
-# Todo: Place your REST API code here ...
 @app.route("/shopcarts", methods=["POST"])
 def create_shopcarts():
     """
@@ -75,6 +78,20 @@ def create_shopcarts():
 
     app.logger.info("Shopcart with id: %d created.", new_cart.id)
     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+
+
+######################################################################
+#  L I S T  S H O P C A R T S  E N D P O I N T
+######################################################################
+@app.route("/shopcarts", methods=["GET"])
+def list_shopcarts():
+    """List all shop carts"""
+    app.logger.info("Request for Shop Cart list")
+    shop_carts = ShopCart.all()
+
+    results = [shop_cart.serialize() for shop_cart in shop_carts]
+
+    return jsonify(results), status.HTTP_200_OK
 
 
 ######################################################################
@@ -106,3 +123,6 @@ def error(status_code, reason):
     """Logs the error and then aborts"""
     app.logger.error(reason)
     abort(status_code, reason)
+
+
+
