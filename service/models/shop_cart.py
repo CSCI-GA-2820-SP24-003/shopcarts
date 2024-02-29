@@ -6,17 +6,18 @@ Shop Cart Model
 from enum import Enum
 from .persistent_base import db, logger, DataValidationError, PersistentBase
 from .shop_cart_item import ShopCartItem
+from decimal import Decimal
 
 
-class ShopCartStatus(Enum):
-    """Enumeration of different shop cart statuses"""
+# class ShopCartStatus(Enum):
+#     """Enumeration of different shop cart statuses"""
 
-    # An item has been added to the shop cart
-    ACTIVE = 0
-    # User reached last step of checkout
-    PENDING = 1
-    # Order was fulfilled or cart was abandoned
-    INACTIVE = 3
+#     # An item has been added to the shop cart
+#     ACTIVE = 0
+#     # User reached last step of checkout
+#     PENDING = 1
+#     # Order was fulfilled or cart was abandoned
+#     INACTIVE = 3
 
 
 class ShopCart(db.Model, PersistentBase):
@@ -31,11 +32,11 @@ class ShopCart(db.Model, PersistentBase):
     user_id = db.Column(db.Integer)
     name = db.Column(db.String(63))
     total_price = db.Column(db.Numeric(precision=10, scale=2))
-    status = db.Column(
-        db.Enum(
-            ShopCartStatus, nullable=False, server_default=(ShopCartStatus.ACTIVE.name)
-        )
-    )
+    # status = db.Column(
+    #     db.Enum(
+    #         ShopCartStatus, nullable=False, server_default=(ShopCartStatus.ACTIVE.name)
+    #     )
+    # )
     items = db.relationship("ShopCartItem", backref="shop_cart", passive_deletes=True)
 
     def __repr__(self):
@@ -48,7 +49,7 @@ class ShopCart(db.Model, PersistentBase):
             "user_id": self.user_id,
             "name": self.name,
             "total_price": self.total_price,
-            "status": self.status.name,
+            # "status": self.status.name,
             "items": [],
         }
         for item in self.items:
@@ -66,12 +67,13 @@ class ShopCart(db.Model, PersistentBase):
             self.user_id = data["user_id"]
             self.name = data["name"]
             self.total_price = data["total_price"]
-            self.status = getattr(ShopCartStatus, data["status"])
+            # self.status = getattr(ShopCartStatus, data["status"])
             item_list = data.get("items")
-            for json_item in item_list:
-                item = ShopCartItem()
-                item.deserialize(json_item)
-                self.items.append(item)
+            if item_list:
+                for json_item in item_list:
+                    item = ShopCartItem()
+                    item.deserialize(json_item)
+                    self.items.append(item)
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
