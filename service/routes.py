@@ -23,22 +23,8 @@ and Delete Shop Carts
 
 from flask import jsonify  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
-<<<<<<< HEAD
-from service.models.shopcart import Shopcart
-from service.models.item import Item
-=======
 from service.models import ShopCart
->>>>>>> master
 from service.common import status  # HTTP Status Codes
-
-
-######################################################################
-# GET HEALTH CHECK
-######################################################################
-@app.route("/health")
-def health_check():
-    """Let them know our heart is still beating"""
-    return jsonify(status=200, message="Healthy"), status.HTTP_200_OK
 
 
 ######################################################################
@@ -58,40 +44,40 @@ def index():
 ######################################################################
 
 
-@app.route("/shopcarts", methods=["POST"])
-def create_shopcarts():
-    """
-    Creates a shopcart
-    This endpoint will create an shopcart based the data in the body that is posted
-    """
-    app.logger.info("Request to create shopcart")
-    check_content_type("application/json")
+# @app.route("/shopcarts", methods=["POST"])
+# def create_shopcarts():
+#     """
+#     Creates a shopcart
+#     This endpoint will create an shopcart based the data in the body that is posted
+#     """
+#     app.logger.info("Request to create shopcart")
+#     check_content_type("application/json")
 
-    # try find one
+#     # try find one
 
-    new_cart = Shopcart()
-    new_cart.deserialize(request.get_json())
-    new_cart.create()
+#     new_cart = Shopcart()
+#     new_cart.deserialize(request.get_json())
+#     new_cart.create()
 
-    message = new_cart.serialize()
-    location_url = url_for("get_shopcarts", shopcart_id=new_cart.id, _external=True)
+#     message = new_cart.serialize()
+#     location_url = url_for("get_shopcarts", shopcart_id=new_cart.id, _external=True)
 
-    app.logger.info("Shopcart with id: %d created.", new_cart.id)
-    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+#     app.logger.info("Shopcart with id: %d created.", new_cart.id)
+#     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 ######################################################################
 #  L I S T  S H O P C A R T S  E N D P O I N T
 ######################################################################
-@app.route("/shopcarts", methods=["GET"])
-def list_shopcarts():
-    """List all shop carts"""
-    app.logger.info("Request for Shop Cart list")
-    shop_carts = ShopCart.all()
+# @app.route("/shopcarts", methods=["GET"])
+# def list_shopcarts():
+#     """List all shop carts"""
+#     app.logger.info("Request for Shop Cart list")
+#     shop_carts = ShopCart.all()
 
-    results = [shop_cart.serialize() for shop_cart in shop_carts]
+#     results = [shop_cart.serialize() for shop_cart in shop_carts]
 
-    return jsonify(results), status.HTTP_200_OK
+#     return jsonify(results), status.HTTP_200_OK
 
 
 ######################################################################
@@ -123,6 +109,3 @@ def error(status_code, reason):
     """Logs the error and then aborts"""
     app.logger.error(reason)
     abort(status_code, reason)
-
-
-

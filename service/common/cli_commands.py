@@ -17,7 +17,7 @@
 Flask CLI Command Extensions
 """
 from flask import current_app as app  # Import Flask application
-from service.models.shopcart import db
+from service.models import db
 
 
 ######################################################################
