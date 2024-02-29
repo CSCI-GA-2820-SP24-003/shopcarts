@@ -77,7 +77,13 @@ def create_shopcarts():
 def list_shopcarts():
     """List all shop carts"""
     app.logger.info("Request for Shop Cart list")
-    shop_carts = ShopCart.all()
+    shop_carts = []
+
+    name = request.args.get("name")
+    if name:
+        shop_carts = ShopCart.find_by_name(name)
+    else:
+        shop_carts = ShopCart.all()
 
     results = [shop_cart.serialize() for shop_cart in shop_carts]
 
