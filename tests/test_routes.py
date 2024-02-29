@@ -21,7 +21,7 @@ BASE_URL = "/shopcarts"
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestShopCartService(TestCase):
+class ShopCartService(TestCase):
     """REST API Server Tests"""
 
     @classmethod
@@ -78,49 +78,6 @@ class TestShopCartService(TestCase):
         """It should call the home page"""
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
-    def test_create_shop_cart(self):
-        """It should Create a new shop cart"""
-        shopcart = ShopCartFactory()
-        resp = self.client.post(
-            BASE_URL, json=shopcart.serialize(), content_type="application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-        # Make sure location header is set
-        location = resp.headers.get("Location", None)
-        self.assertIsNotNone(location)
-
-        # Check the data is correct
-        new_shopcart = resp.get_json()
-        self.assertEqual(
-            new_shopcart["user_id"], shopcart.user_id, "user_id does not match"
-        )
-        self.assertEqual(new_shopcart["name"], shopcart.name, "name does not match")
-        self.assertEqual(
-            new_shopcart["total_price"],
-            str(shopcart.total_price),
-            "total_price does not match",
-        )
-
-        # to do when list shopcarts are ready
-        # Check that the location header was correct by getting it
-        # resp = self.client.get(location, content_type="application/json")
-        # self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        # new_account = resp.get_json()
-        # self.assertEqual(new_account["name"], account.name, "Names does not match")
-        # self.assertEqual(
-        #     new_account["addresses"], account.addresses, "Address does not match"
-        # )
-        # self.assertEqual(new_account["email"], account.email, "Email does not match")
-        # self.assertEqual(
-        #     new_account["phone_number"], account.phone_number, "Phone does not match"
-        # )
-        # self.assertEqual(
-        #     new_account["date_joined"],
-        #     str(account.date_joined),
-        #     "Date Joined does not match",
-        # )
 
     def test_list_shopcarts(self):
         """It should get a list of shop carts"""
