@@ -21,63 +21,67 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Shop Carts
 """
 
-from flask import jsonify  # , request, url_for, abort
+from flask import jsonify, request, url_for, abort  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.models import ShopCart
 from service.common import status  # HTTP Status Codes
 
 
-######################################################################
+#####################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
 def index():
     """Root URL response"""
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Account REST API Service",
+            version="1.0",
+            # To do when list accounts available
+            # paths=url_for("list_accounts", _external=True),
+        ),
         status.HTTP_200_OK,
     )
 
 
 ######################################################################
-#  R E S T   A P I   E N D P O I N T S
+# CREATE A NEW SHOPCART
 ######################################################################
+@app.route("/shopcarts", methods=["POST"])
+def create_shopcarts():
+    """
+    Creates a shop cart
+    This endpoint will create a shop cart based the data in the body that is posted
+    """
+    app.logger.info("Request to create an ShopCart")
+    check_content_type("application/json")
 
+    # Create the account
+    shopcart = ShopCart()
+    shopcart.deserialize(request.get_json())
+    shopcart.create()
 
-# @app.route("/shopcarts", methods=["POST"])
-# def create_shopcarts():
-#     """
-#     Creates a shopcart
-#     This endpoint will create an shopcart based the data in the body that is posted
-#     """
-#     app.logger.info("Request to create shopcart")
-#     check_content_type("application/json")
+    # Create a message to return
+    message = shopcart.serialize()
+    # To do when list shopcarts is done
+    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    location_url = "/"
 
-#     # try find one
-
-#     new_cart = Shopcart()
-#     new_cart.deserialize(request.get_json())
-#     new_cart.create()
-
-#     message = new_cart.serialize()
-#     location_url = url_for("get_shopcarts", shopcart_id=new_cart.id, _external=True)
-
-#     app.logger.info("Shopcart with id: %d created.", new_cart.id)
-#     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 ######################################################################
 #  L I S T  S H O P C A R T S  E N D P O I N T
 ######################################################################
-# @app.route("/shopcarts", methods=["GET"])
-# def list_shopcarts():
-#     """List all shop carts"""
-#     app.logger.info("Request for Shop Cart list")
-#     shop_carts = ShopCart.all()
+@app.route("/shopcarts", methods=["GET"])
+def list_shopcarts():
+    """List all shop carts"""
+    app.logger.info("Request for Shop Cart list")
+    shop_carts = ShopCart.all()
 
-#     results = [shop_cart.serialize() for shop_cart in shop_carts]
+    results = [shop_cart.serialize() for shop_cart in shop_carts]
 
-#     return jsonify(results), status.HTTP_200_OK
+    return jsonify(results), status.HTTP_200_OK
 
 
 ######################################################################
