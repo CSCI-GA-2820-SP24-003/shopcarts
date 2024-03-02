@@ -23,7 +23,7 @@ and Delete Shop Carts
 
 from flask import jsonify, request, url_for, abort  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import ShopCart
+from service.models import ShopCart, ShopCartItem
 from service.common import status  # HTTP Status Codes
 
 
@@ -35,10 +35,10 @@ def index():
     """Root URL response"""
     return (
         jsonify(
-            name="Account REST API Service",
+            name="Shopcart REST API Service",
             version="1.0",
-            # To do when list accounts available
-            # paths=url_for("list_accounts", _external=True),
+            # To do when list Shopcart available
+            # paths=url_for("list_Shopcarts", _external=True),
         ),
         status.HTTP_200_OK,
     )
@@ -56,7 +56,7 @@ def create_shopcarts():
     app.logger.info("Request to create an ShopCart")
     check_content_type("application/json")
 
-    # Create the account
+    # Create the shopcart
     shopcart = ShopCart()
     shopcart.deserialize(request.get_json())
     shopcart.create()
@@ -64,7 +64,7 @@ def create_shopcarts():
     # Create a message to return
     message = shopcart.serialize()
     # To do when list shopcarts is done
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    # location_url = url_for("get_shopcarts", shopcart_id=shopcart.id, _external=True)
     location_url = "/"
 
     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
@@ -88,6 +88,97 @@ def list_shopcarts():
     results = [shop_cart.serialize() for shop_cart in shop_carts]
 
     return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
+# UPDATE AN EXISTING SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>", methods=["PUT"])
+def update_shopcarts(shopcart_id):
+    """
+    Update an ShopCart
+
+    This endpoint will update a ShopCart based the body that is posted
+    """
+    app.logger.info("Request to update shopcart with id: %s", shopcart_id)
+    check_content_type("application/json")
+
+    # See if the shopcart exists and abort if it doesn't
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with id '{shopcart_id}' was not found.",
+        )
+
+    # Update from the json in the body of the request
+    shopcart.deserialize(request.get_json())
+    shopcart.id = shopcart_id
+    shopcart.update()
+
+    return jsonify(shopcart.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+# ADD AN ITEM TO A SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/items", methods=["POST"])
+def create_shopcart_item(shopcart_id):
+    """
+    Create an ShopCartItem on an ShopCart
+
+    This endpoint will add an item to a shopcart
+    """
+    app.logger.info(
+        "Request to create an ShopCartItem for ShopCart with id: %s", shopcart_id
+    )
+    check_content_type("application/json")
+
+    # See if the shopcart exists and abort if it doesn't
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"shopcart with id '{shopcart_id}' could not be found.",
+        )
+
+    # Create an item from the json data
+    item = ShopCartItem()
+    item.deserialize(request.get_json())
+
+    # Append the item to the shopcart
+    shopcart.items.append(item)
+    shopcart.update()
+
+    # Prepare a message to return
+    message = item.serialize()
+
+    return jsonify(message), status.HTTP_201_CREATED
+
+
+######################################################################
+# RETRIEVE AN ITEM FROM SHOPCART
+######################################################################
+# @app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["GET"])
+# def get_items(shopcart_id, item_id):
+#     """
+#     Get an Item
+
+#     This endpoint returns just an item
+#     """
+#     app.logger.info(
+#         "Request to retrieve Item %s for ShopCart id: %s", (item_id, shopcart_id)
+#     )
+
+#     # See if the item exists and abort if it doesn't
+#     address = Item.find(address_id)
+#     if not address:
+#         abort(
+#             status.HTTP_404_NOT_FOUND,
+#             f"Account with id '{address_id}' could not be found.",
+#         )
+
+#     return jsonify(address.serialize()), status.HTTP_200_OK
 
 
 ######################################################################

@@ -8,7 +8,7 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
-from .factories import ShopCartFactory
+from .factories import ShopCartFactory, ShopCartItemFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -79,7 +79,7 @@ class TestShopCartService(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    def test_create_shop_cart(self):
+    def test_create_shopcart(self):
         """It should Create a new shop cart"""
         shopcart = ShopCartFactory()
         resp = self.client.post(
@@ -129,3 +129,69 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), 10)
+
+    def test_update_shopcart(self):
+        """It should Update an existing Shopcart"""
+        # create an ShopCart to update
+        test_shopcart = ShopCartFactory()
+        resp = self.client.post(BASE_URL, json=test_shopcart.serialize())
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # update the ShopCart
+        new_shopcart = resp.get_json()
+        new_shopcart["name"] = "Happy-Happy Joy-Joy"
+        new_shopcart_id = new_shopcart["id"]
+        resp = self.client.put(f"{BASE_URL}/{new_shopcart_id}", json=new_shopcart)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        updated_shopcart = resp.get_json()
+        self.assertEqual(updated_shopcart["name"], "Happy-Happy Joy-Joy")
+
+    def test_create_shopcart_item(self):
+        """It should Add an item to a shopcart"""
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["shop_cart_id"], shopcart.id)
+        self.assertEqual(data["name"], item.name)
+        self.assertEqual(data["product_id"], item.product_id)
+        self.assertEqual(data["quantity"], item.quantity)
+        self.assertEqual(data["price"], str(item.price))
+
+    # def test_get_item(self):
+    #     """It should Get an item from a shopcart"""
+    #     # create a known address
+    #     shopcart = self._create_shopcarts(1)[0]
+    #     item = ShopCartItemFactory()
+    #     resp = self.client.post(
+    #         f"{BASE_URL}/{shopcart.id}/items",
+    #         json=item.serialize(),
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+    #     data = resp.get_json()
+    #     logging.debug(data)
+    #     item_id = data["id"]
+
+    #     # retrieve it back
+    #     resp = self.client.get(
+    #         f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    #     data = resp.get_json()
+    #     logging.debug(data)
+    #     self.assertEqual(data["shop_cart_id"], shopcart.id)
+    #     self.assertEqual(data["name"], item.name)
+    #     self.assertEqual(data["product_id"], item.product_id)
+    #     self.assertEqual(data["quantity"], item.quantity)
+    #     self.assertEqual(data["price"], item.price)
