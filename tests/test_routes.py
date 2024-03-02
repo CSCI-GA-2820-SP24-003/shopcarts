@@ -165,33 +165,33 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["quantity"], item.quantity)
         self.assertEqual(data["price"], str(item.price))
 
-    # def test_get_item(self):
-    #     """It should Get an item from a shopcart"""
-    #     # create a known address
-    #     shopcart = self._create_shopcarts(1)[0]
-    #     item = ShopCartItemFactory()
-    #     resp = self.client.post(
-    #         f"{BASE_URL}/{shopcart.id}/items",
-    #         json=item.serialize(),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+    def test_get_item(self):
+        """It should Get an item from a shopcart"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-    #     data = resp.get_json()
-    #     logging.debug(data)
-    #     item_id = data["id"]
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
 
-    #     # retrieve it back
-    #     resp = self.client.get(
-    #         f"{BASE_URL}/{shopcart.id}/items/{item_id}",
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    #     data = resp.get_json()
-    #     logging.debug(data)
-    #     self.assertEqual(data["shop_cart_id"], shopcart.id)
-    #     self.assertEqual(data["name"], item.name)
-    #     self.assertEqual(data["product_id"], item.product_id)
-    #     self.assertEqual(data["quantity"], item.quantity)
-    #     self.assertEqual(data["price"], item.price)
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["shop_cart_id"], shopcart.id)
+        self.assertEqual(data["name"], item.name)
+        self.assertEqual(data["product_id"], item.product_id)
+        self.assertEqual(data["quantity"], item.quantity)
+        self.assertEqual(data["price"], str(item.price))

@@ -81,7 +81,7 @@ class ShopCartItem(db.Model, PersistentBase):
     def find(cls, by_id):
         """Finds a ShopCart Item by it's ID"""
         logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.session.get(by_id)
+        return cls.query.session.get(cls, by_id)
 
     @classmethod
     def find_by_name(cls, name):
