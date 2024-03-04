@@ -91,31 +91,30 @@ def list_shopcarts():
 
 
 ######################################################################
-# UPDATE AN EXISTING SHOPCART
+# UPDATE AN EXISTING ShopCart
 ######################################################################
 @app.route("/shopcarts/<int:shopcart_id>", methods=["PUT"])
 def update_shopcarts(shopcart_id):
     """
-    Update an ShopCart
+    Update a ShopCart
 
     This endpoint will update a ShopCart based the body that is posted
     """
-    app.logger.info("Request to update shopcart with id: %s", shopcart_id)
+    app.logger.info("Request to update shopcart with id: %d", shopcart_id)
     check_content_type("application/json")
 
-    # See if the shopcart exists and abort if it doesn't
     shopcart = ShopCart.find(shopcart_id)
     if not shopcart:
-        abort(
+        error(
             status.HTTP_404_NOT_FOUND,
-            f"ShopCart with id '{shopcart_id}' was not found.",
+            f"ShopCart with id: '{shopcart_id}' was not found.",
         )
 
-    # Update from the json in the body of the request
     shopcart.deserialize(request.get_json())
     shopcart.id = shopcart_id
     shopcart.update()
 
+    app.logger.info("ShopCart with ID: %d updated.", shopcart.id)
     return jsonify(shopcart.serialize()), status.HTTP_200_OK
 
 
@@ -165,7 +164,7 @@ def create_shopcart_item(shopcart_id):
 # RETRIEVE AN ITEM FROM SHOPCART
 ######################################################################
 @app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["GET"])
-def get_items(shopcart_id, item_id):
+def get_shopcart_items(shopcart_id, item_id):
     """
     Get an Item
 
@@ -215,31 +214,3 @@ def error(status_code, reason):
     """Logs the error and then aborts"""
     app.logger.error(reason)
     abort(status_code, reason)
-
-
-######################################################################
-# UPDATE AN EXISTING ShopCart
-######################################################################
-@app.route("/shopcarts/<int:shopcart_id>", methods=["PUT"])
-def update_shopcarts(shopcart_id):
-    """
-    Update a ShopCart
-
-    This endpoint will update a ShopCart based the body that is posted
-    """
-    app.logger.info("Request to update shopcart with id: %d", shopcart_id)
-    check_content_type("application/json")
-
-    shopcart = ShopCart.find(shopcart_id)
-    if not shopcart:
-        error(
-            status.HTTP_404_NOT_FOUND,
-            f"ShopCart with id: '{shopcart_id}' was not found.",
-        )
-
-    shopcart.deserialize(request.get_json())
-    shopcart.id = shopcart_id
-    shopcart.update()
-
-    app.logger.info("ShopCart with ID: %d updated.", shopcart.id)
-    return jsonify(shopcart.serialize()), status.HTTP_200_OK
