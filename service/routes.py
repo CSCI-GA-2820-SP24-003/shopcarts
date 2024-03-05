@@ -216,7 +216,7 @@ def get_shopcart_items(shopcart_id, item_id):
     if not item:
         abort(
             status.HTTP_404_NOT_FOUND,
-            f"Account with id '{item_id}' could not be found.",
+            f"Item with id '{item_id}' could not be found.",
         )
 
     return jsonify(item.serialize()), status.HTTP_200_OK
