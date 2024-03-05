@@ -57,6 +57,21 @@ tests/                     - test cases package
 └── test_routes.py         - test suite for service routes
 ```
 
+## Available API Endpoints
+
+| Operation | Method | URI |
+| ---------|----------|----------|
+| ```create_shopcarts``` | ```POST``` | ```/shopcarts``` |
+| ```get_shopcarts``` | ```GET``` | ```/shopcarts/{id}``` |
+| ```update_shopcarts``` | ```PUT``` | ```/shopcarts/{id}``` |
+| ```delete_shopcarts``` | ```DELETE``` | ```/shopcarts/{id}``` |
+| ```list_shopcarts``` | ```GET``` | ```/shopcarts``` |
+| ```create_shopcart_item``` | ```POST``` | ```/shopcarts/{id}/items``` |
+| ```get_shopcart_items``` | ```GET``` | ```/shopcarts/{id}/items/{id}``` |
+| ```update_shopcart_item``` | ```PUT``` | ```/shopcarts/{id}/items/{id}``` |
+| ```delete_shopcart_item``` | ```DELETE``` | ```/shopcarts/{id}/items/{id}``` |
+| ```list_shopcart_items``` | ```GET``` | ```/shopcarts/{id}/items``` |
+
 ## License
 
 Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
