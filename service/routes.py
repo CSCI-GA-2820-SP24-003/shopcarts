@@ -23,7 +23,7 @@ and Delete Shop Carts
 
 from flask import jsonify, request, url_for, abort  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import ShopCart
+from service.models import ShopCart, ShopCartItem
 from service.common import status  # HTTP Status Codes
 
 
@@ -71,7 +71,7 @@ def create_shopcarts():
 
 
 ######################################################################
-#  L I S T  S H O P C A R T S  E N D P O I N T
+#  LIST ALL SHOPCARTS
 ######################################################################
 @app.route("/shopcarts", methods=["GET"])
 def list_shopcarts():
@@ -89,8 +89,8 @@ def list_shopcarts():
 
     return jsonify(results), status.HTTP_200_OK
 
-
-######################################################################
+  
+######################################################################  
 # DELETE A SHOPCART
 ######################################################################
 @app.route("/shopcarts/<int:shopcart_id>", methods=["DELETE"])
@@ -108,6 +108,40 @@ def delete_shopcarts(shopcart_id):
 
     app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
     return "", status.HTTP_204_NO_CONTENT
+
+
+######################################################################
+# CREATE A NEW SHOPCART ITEM
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/items", methods=["POST"])
+def create_shopcart_item(shopcart_id):
+    """
+    Creates a shop cart item
+    This endpoint will create a shop cart item and add it to the shopcart
+    """
+    app.logger.info("Request to create an Item for ShopCart with ID: %s", shopcart_id)
+    check_content_type("application/json")
+
+    # Search for the shopcart
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
+
+    # Create item from json data
+    item = ShopCartItem()
+    item.deserialize(request.get_json())
+
+    # Append item to the shopcart
+    shopcart.items.append(item)
+    shopcart.update()
+
+    # Create a message to return
+    message = item.serialize()
+
+    return jsonify(message), status.HTTP_201_CREATED
 
 
 ######################################################################

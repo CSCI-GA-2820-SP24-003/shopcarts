@@ -8,7 +8,8 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
-from .factories import ShopCartFactory
+from .factories import ShopCartFactory, ShopCartItemFactory
+from decimal import Decimal
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -129,7 +130,6 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), 10)
-
  
     def test_delete_shopcart(self):
         """It should Delete a Shopcart"""
@@ -142,26 +142,6 @@ class TestShopCartService(TestCase):
         # TODO: uncomment when get_shopcarts is implemented
         # response = self.client.get(f"{BASE_URL}/{test_shopcart.id}")
         # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    # def test_update_shopcart(self):
-    #     """It should Update an existing ShopCart"""
-    #     # create a shopcart to update
-    #     test_shopcart = ShopCartFactory()
-    #     response = self.client.post(BASE_URL, json=test_shopcart.serialize())
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    #     # update the shopcart
-    #     new_shopcart = response.get_json()
-    #     logging.debug(new_shopcart)
-    #     # new_shopcart["category"] = "unknown"
-    #     response = self.client.put(
-    #         f"{BASE_URL}/{new_shopcart['id']}", json=new_shopcart
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     updated_shopcart = response.get_json()
-    #     # logging.debug(updated_shopcart)
-    #     print(new_shopcart)
-    #     self.assertEqual(updated_shopcart["name"], new_shopcart["name"])
 
     def test_update_shopcart(self):
         """It should Update an existing ShopCart with all fields"""
@@ -177,7 +157,7 @@ class TestShopCartService(TestCase):
                 "user_id"
             ],  # Assuming user_id can be updated or is needed for identification
             "name": "Updated Name",
-            "total_price": float(new_shopcart["total_price"])
+            "total_price": deciaml(new_shopcart["total_price"])
             + 100,  # Example of updating the price
             # Include updates to other fields here
         }
@@ -192,7 +172,7 @@ class TestShopCartService(TestCase):
         # Verify that all fields have been updated correctly
         self.assertEqual(updated_shopcart["name"], update_payload["name"])
         self.assertEqual(
-            float(updated_shopcart["total_price"]), update_payload["total_price"]
+            updated_shopcart["total_price"], str(update_payload["total_price"])
         )
         # Add assertions for other fields here
 
@@ -226,4 +206,20 @@ class TestShopCartService(TestCase):
         # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
-
+        
+    def test_create_shopcart_item(self):
+        """It should add an item to a shop cart"""
+        shop_cart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shop_cart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["product_id"], item.product_id)
+        self.assertEqual(data["shop_cart_id"], shop_cart.id)
+        self.assertEqual(data["quantity"], item.quantity)
+        self.assertEqual(data["price"], str(item.price))
