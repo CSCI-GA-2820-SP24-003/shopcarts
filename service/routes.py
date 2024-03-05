@@ -37,8 +37,7 @@ def index():
         jsonify(
             name="Shopcart REST API Service",
             version="1.0",
-            # To do when list Shopcart available
-            # paths=url_for("list_Shopcarts", _external=True),
+            paths=url_for("list_shopcarts", _external=True),
         ),
         status.HTTP_200_OK,
     )
@@ -63,11 +62,32 @@ def create_shopcarts():
 
     # Create a message to return
     message = shopcart.serialize()
-    # To do when list shopcarts is done
-    # location_url = url_for("get_shopcarts", shopcart_id=shopcart.id, _external=True)
-    location_url = "/"
+    location_url = url_for("get_shopcarts", shopcart_id=shopcart.id, _external=True)
 
     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+
+
+######################################################################
+# RETRIEVE A SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>", methods=["GET"])
+def get_shopcarts(shopcart_id):
+    """
+    Retrieve a single Shopcart
+
+    This endpoint will return a Shopcart based on it's id
+    """
+    app.logger.info("Request for Shopcart with id: %s", shopcart_id)
+
+    # See if the account exists and abort if it doesn't
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Shopcart with id '{shopcart_id}' could not be found.",
+        )
+
+    return jsonify(shopcart.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
