@@ -223,6 +223,27 @@ def get_shopcart_items(shopcart_id, item_id):
 
 
 ######################################################################
+# DELETE AN ITEM FROM SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["DELETE"])
+def delete_shopcart_items(shopcart_id, item_id):
+    """
+    Delete shopcart item
+
+    This endpoint will delete a shopcart item
+    """
+    app.logger.info(
+        "Request to delete item %s for a shopcart id: %s", (item_id, shopcart_id)
+    )
+
+    item = ShopCartItem.find(item_id)
+    if item:
+        item.delete()
+
+    return "", status.HTTP_204_NO_CONTENT
+
+
+######################################################################
 # Checks the ContentType of a request
 ######################################################################
 def check_content_type(content_type):
