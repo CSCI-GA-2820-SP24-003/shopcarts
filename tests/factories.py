@@ -42,8 +42,9 @@ class ShopCartItemFactory(factory.Factory):
         model = ShopCartItem
 
     id = factory.Sequence(lambda n: n)
-    product_id = factory.Sequence(lambda n: n)
     shop_cart_id = None
+    name = factory.Sequence(lambda n: f"i-{n}")
+    product_id = factory.Sequence(lambda n: n)
     quantity = factory.Sequence(lambda n: n)
     price = FuzzyDecimal(0.00, 10.00)
     shop_cart = factory.SubFactory(ShopCartFactory)

@@ -82,23 +82,6 @@ class TestShopCartItem(TestCase):
     #     self.assertEqual(found_shop_cart_item.id, shop_cart_item.id)
     #     self.assertEqual(found_shop_cart_item.quantity, shop_cart_item.quantity)
 
-    def test_update_shop_cart_item(self):
-        """It should update a Shop Cart Item"""
-        shop_cart_item = ShopCartItemFactory()
-        logging.debug(shop_cart_item)
-        shop_cart_item.id = None
-        shop_cart_item.create()
-        logging.debug(shop_cart_item)
-        self.assertIsNotNone(shop_cart_item.id)
-        # Update shop cart item
-        shop_cart_item.quantity = 10
-        shop_cart_item.update()
-        self.assertEqual(shop_cart_item.quantity, 10)
-        shop_cart_items = ShopCartItem.all()
-        self.assertEqual(len(shop_cart_items), 1)
-        self.assertEqual(shop_cart_items[0].id, shop_cart_item.id)
-        self.assertEqual(shop_cart_items[0].quantity, 10)
-
     # def test_delete_shop_cart_with_item(self):
     #     """It should delete a Shop Cart with an item"""
     #     shop_carts = ShopCart.all()

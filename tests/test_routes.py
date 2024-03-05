@@ -80,7 +80,7 @@ class TestShopCartService(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    def test_create_shop_cart(self):
+    def test_create_shopcart(self):
         """It should Create a new shop cart"""
         shopcart = ShopCartFactory()
         resp = self.client.post(
@@ -104,24 +104,44 @@ class TestShopCartService(TestCase):
             "total_price does not match",
         )
 
-        # to do when list shopcarts are ready
         # Check that the location header was correct by getting it
-        # resp = self.client.get(location, content_type="application/json")
-        # self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        # new_account = resp.get_json()
-        # self.assertEqual(new_account["name"], account.name, "Names does not match")
-        # self.assertEqual(
-        #     new_account["addresses"], account.addresses, "Address does not match"
-        # )
-        # self.assertEqual(new_account["email"], account.email, "Email does not match")
-        # self.assertEqual(
-        #     new_account["phone_number"], account.phone_number, "Phone does not match"
-        # )
-        # self.assertEqual(
-        #     new_account["date_joined"],
-        #     str(account.date_joined),
-        #     "Date Joined does not match",
-        # )
+        resp = self.client.get(location, content_type="application/json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        new_shopcart = resp.get_json()
+        self.assertEqual(new_shopcart["name"], shopcart.name, "Name does not match")
+        self.assertEqual(
+            new_shopcart["user_id"], shopcart.user_id, "user_id does not match"
+        )
+        self.assertEqual(
+            new_shopcart["total_price"],
+            str(shopcart.total_price),
+            "total_price does not match",
+        )
+        self.assertEqual(new_shopcart["items"], shopcart.items, "items does not match")
+
+    def test_get_shopcart_by_name(self):
+        """It should Get a shopcart by Name"""
+        shopcarts = self._create_shopcarts(3)
+        resp = self.client.get(BASE_URL, query_string=f"name={shopcarts[1].name}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[0]["name"], shopcarts[1].name)
+
+    def test_get_shopcart(self):
+        """It should Read a single shopcart"""
+        # get the id of a shopcart
+        shopcart = self._create_shopcarts(1)[0]
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["name"], shopcart.name)
+
+    def test_get_shopcart_not_found(self):
+        """It should not Read a shopcart that is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_list_shopcarts(self):
         """It should get a list of shop carts"""
@@ -130,7 +150,7 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), 10)
- 
+
     def test_delete_shopcart(self):
         """It should Delete a Shopcart"""
         test_shopcart = self._create_shopcarts(1)[0]
@@ -138,7 +158,6 @@ class TestShopCartService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # make sure they are deleted
-
         # TODO: uncomment when get_shopcarts is implemented
         # response = self.client.get(f"{BASE_URL}/{test_shopcart.id}")
         # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -157,7 +176,7 @@ class TestShopCartService(TestCase):
                 "user_id"
             ],  # Assuming user_id can be updated or is needed for identification
             "name": "Updated Name",
-            "total_price": deciaml(new_shopcart["total_price"])
+            "total_price": Decimal(new_shopcart["total_price"])
             + 100,  # Example of updating the price
             # Include updates to other fields here
         }
@@ -206,7 +225,7 @@ class TestShopCartService(TestCase):
         # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
-        
+
     def test_create_shopcart_item(self):
         """It should add an item to a shop cart"""
         shop_cart = self._create_shopcarts(1)[0]
@@ -221,5 +240,36 @@ class TestShopCartService(TestCase):
         logging.debug(data)
         self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["shop_cart_id"], shop_cart.id)
+        self.assertEqual(data["quantity"], item.quantity)
+        self.assertEqual(data["price"], str(item.price))
+
+    def test_get_shopcart_item(self):
+        """It should Get an item from a shopcart"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["shop_cart_id"], shopcart.id)
+        self.assertEqual(data["name"], item.name)
+        self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["quantity"], item.quantity)
         self.assertEqual(data["price"], str(item.price))
