@@ -71,7 +71,7 @@ def create_shopcarts():
 
 
 ######################################################################
-#  L I S T  S H O P C A R T S  E N D P O I N T
+#  LIST ALL SHOPCARTS
 ######################################################################
 @app.route("/shopcarts", methods=["GET"])
 def list_shopcarts():
@@ -88,6 +88,26 @@ def list_shopcarts():
     results = [shop_cart.serialize() for shop_cart in shop_carts]
 
     return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
+# DELETE A SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>", methods=["DELETE"])
+def delete_shopcarts(shopcart_id):
+    """
+    Delete a Shopcart
+
+    This endpoint will delete a Shopcart based the id specified in the path
+    """
+    app.logger.info("Request to delete shopcart with id: %d", shopcart_id)
+
+    shopcart = ShopCart.find(shopcart_id)
+    if shopcart:
+        shopcart.delete()
+
+    app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
+    return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -124,37 +144,34 @@ def update_shopcarts(shopcart_id):
 
 
 ######################################################################
-# ADD AN ITEM TO A SHOPCART
+# CREATE A NEW SHOPCART ITEM
 ######################################################################
 @app.route("/shopcarts/<int:shopcart_id>/items", methods=["POST"])
 def create_shopcart_item(shopcart_id):
     """
-    Create an ShopCartItem on an ShopCart
-
-    This endpoint will add an item to a shopcart
+    Creates a shop cart item
+    This endpoint will create a shop cart item and add it to the shopcart
     """
-    app.logger.info(
-        "Request to create an ShopCartItem for ShopCart with id: %s", shopcart_id
-    )
+    app.logger.info("Request to create an Item for ShopCart with ID: %s", shopcart_id)
     check_content_type("application/json")
 
-    # See if the shopcart exists and abort if it doesn't
+    # Search for the shopcart
     shopcart = ShopCart.find(shopcart_id)
     if not shopcart:
         abort(
             status.HTTP_404_NOT_FOUND,
-            f"shopcart with id '{shopcart_id}' could not be found.",
+            f"ShopCart with ID '{shopcart_id}' could not be found",
         )
 
-    # Create an item from the json data
+    # Create item from json data
     item = ShopCartItem()
     item.deserialize(request.get_json())
 
-    # Append the item to the shopcart
+    # Append item to the shopcart
     shopcart.items.append(item)
     shopcart.update()
 
-    # Prepare a message to return
+    # Create a message to return
     message = item.serialize()
 
     return jsonify(message), status.HTTP_201_CREATED

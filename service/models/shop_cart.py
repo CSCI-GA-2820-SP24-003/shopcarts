@@ -3,10 +3,11 @@ Shop Cart Model
 
 """
 
-from enum import Enum
+# from enum import Enum
 from .persistent_base import db, logger, DataValidationError, PersistentBase
 from .shop_cart_item import ShopCartItem
-from decimal import Decimal
+
+# from decimal import Decimal
 
 
 # class ShopCartStatus(Enum):
