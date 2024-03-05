@@ -130,6 +130,19 @@ class TestShopCartService(TestCase):
         data = resp.get_json()
         self.assertEqual(len(data), 10)
 
+ 
+    def test_delete_shopcart(self):
+        """It should Delete a Shopcart"""
+        test_shopcart = self._create_shopcarts(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_shopcart.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+
+        # TODO: uncomment when get_shopcarts is implemented
+        # response = self.client.get(f"{BASE_URL}/{test_shopcart.id}")
+        # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # def test_update_shopcart(self):
     #     """It should Update an existing ShopCart"""
     #     # create a shopcart to update
@@ -213,3 +226,4 @@ class TestShopCartService(TestCase):
         # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
+
