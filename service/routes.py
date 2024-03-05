@@ -89,6 +89,26 @@ def list_shopcarts():
 
     return jsonify(results), status.HTTP_200_OK
 
+  
+######################################################################  
+# DELETE A SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>", methods=["DELETE"])
+def delete_shopcarts(shopcart_id):
+    """
+    Delete a Shopcart
+
+    This endpoint will delete a Shopcart based the id specified in the path
+    """
+    app.logger.info("Request to delete shopcart with id: %d", shopcart_id)
+
+    shopcart = ShopCart.find(shopcart_id)
+    if shopcart:
+        shopcart.delete()
+
+    app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
+    return "", status.HTTP_204_NO_CONTENT
+
 
 ######################################################################
 # CREATE A NEW SHOPCART ITEM
@@ -153,3 +173,31 @@ def error(status_code, reason):
     """Logs the error and then aborts"""
     app.logger.error(reason)
     abort(status_code, reason)
+
+
+######################################################################
+# UPDATE AN EXISTING ShopCart
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>", methods=["PUT"])
+def update_shopcarts(shopcart_id):
+    """
+    Update a ShopCart
+
+    This endpoint will update a ShopCart based the body that is posted
+    """
+    app.logger.info("Request to update shopcart with id: %d", shopcart_id)
+    check_content_type("application/json")
+
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        error(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with id: '{shopcart_id}' was not found.",
+        )
+
+    shopcart.deserialize(request.get_json())
+    shopcart.id = shopcart_id
+    shopcart.update()
+
+    app.logger.info("ShopCart with ID: %d updated.", shopcart.id)
+    return jsonify(shopcart.serialize()), status.HTTP_200_OK

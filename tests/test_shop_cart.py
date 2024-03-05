@@ -108,83 +108,83 @@ class TestShopCart(TestCase):
     #     self.assertEqual(found_shop_cart.user_id, shop_cart.user_id)
     #     self.assertEqual(found_shop_cart.items, [])
 
+    def test_update_shop_cart(self):
+        """It should update a Shop Cart"""
+        shop_cart = ShopCartFactory()
+        logging.debug(shop_cart)
+        shop_cart.id = None
+        shop_cart.create()
+        logging.debug(shop_cart)
+        self.assertIsNotNone(shop_cart.id)
+        # Update shop cart
+        shop_cart.total_price = 250.00
+        shop_cart.update()
+        self.assertEqual(shop_cart.total_price, 250.00)
+        shop_carts = ShopCart.all()
+        self.assertEqual(len(shop_carts), 1)
+        self.assertEqual(shop_carts[0].id, shop_cart.id)
+        self.assertEqual(shop_carts[0].total_price, 250.00)
 
-#     def test_update_shop_cart(self):
-#         """It should update a Shop Cart"""
-#         shop_cart = ShopCartFactory()
-#         logging.debug(shop_cart)
-#         shop_cart.id = None
-#         shop_cart.create()
-#         logging.debug(shop_cart)
-#         self.assertIsNotNone(shop_cart.id)
-#         # Update shop cart
-#         shop_cart.total_price = 250.00
-#         shop_cart.update()
-#         self.assertEqual(shop_cart.total_price, 250.00)
-#         shop_carts = ShopCart.all()
-#         self.assertEqual(len(shop_carts), 1)
-#         self.assertEqual(shop_carts[0].id, shop_cart.id)
-#         self.assertEqual(shop_carts[0].total_price, 250.00)
+    #     def test_delete_shop_cart(self):
+    #         """It should delete a Shop Cart"""
+    #         shop_cart = ShopCartFactory()
+    #         shop_cart.create()
+    #         self.assertEqual(len(ShopCart.all()), 1)
+    #         shop_cart.delete()
+    #         self.assertEqual(len(ShopCart.all()), 0)
 
-#     def test_delete_shop_cart(self):
-#         """It should delete a Shop Cart"""
-#         shop_cart = ShopCartFactory()
-#         shop_cart.create()
-#         self.assertEqual(len(ShopCart.all()), 1)
-#         shop_cart.delete()
-#         self.assertEqual(len(ShopCart.all()), 0)
+    #     def test_list_all_shop_carts(self):
+    #         """It should list all Shop Carts in the database"""
+    #         shop_carts = ShopCart.all()
+    #         self.assertEqual(shop_carts, [])
 
-#     def test_list_all_shop_carts(self):
-#         """It should list all Shop Carts in the database"""
-#         shop_carts = ShopCart.all()
-#         self.assertEqual(shop_carts, [])
+    #         for _ in range(7):
+    #             shop_cart = ShopCartFactory()
+    #             shop_cart.create()
 
-#         for _ in range(7):
-#             shop_cart = ShopCartFactory()
-#             shop_cart.create()
+    #         shop_carts = ShopCart.all()
+    #         self.assertEqual(len(shop_carts), 7)
 
-#         shop_carts = ShopCart.all()
-#         self.assertEqual(len(shop_carts), 7)
+    #     def test_serialize_shop_cart(self):
+    #         """It should serialize a Shop Cart"""
+    #         shop_cart = ShopCartFactory()
+    #         shop_cart_item = ShopCartItem()
+    #         shop_cart.items.append(shop_cart_item)
+    #         data = shop_cart.serialize()
+    #         self.assertNotEqual(data, None)
+    #         self.assertEqual(data["id"], shop_cart.id)
+    #         self.assertEqual(data["user_id"], shop_cart.user_id)
+    #         self.assertEqual(data["name"], shop_cart.name)
+    #         self.assertEqual(data["total_price"], shop_cart.total_price)
+    #         self.assertEqual(data["status"], shop_cart.status.name)
+    #         self.assertEqual(len(data["items"]), 1)
+    #         items = data["items"]
+    #         self.assertEqual(items[0]["id"], shop_cart_item.id)
+    #         self.assertEqual(items[0]["product_id"], shop_cart_item.product_id)
+    #         self.assertEqual(items[0]["shop_cart_id"], shop_cart_item.shop_cart_id)
+    #         self.assertEqual(items[0]["quantity"], shop_cart_item.quantity)
+    #         self.assertEqual(items[0]["price"], shop_cart_item.price)
 
-#     def test_serialize_shop_cart(self):
-#         """It should serialize a Shop Cart"""
-#         shop_cart = ShopCartFactory()
-#         shop_cart_item = ShopCartItem()
-#         shop_cart.items.append(shop_cart_item)
-#         data = shop_cart.serialize()
-#         self.assertNotEqual(data, None)
-#         self.assertEqual(data["id"], shop_cart.id)
-#         self.assertEqual(data["user_id"], shop_cart.user_id)
-#         self.assertEqual(data["name"], shop_cart.name)
-#         self.assertEqual(data["total_price"], shop_cart.total_price)
-#         self.assertEqual(data["status"], shop_cart.status.name)
-#         self.assertEqual(len(data["items"]), 1)
-#         items = data["items"]
-#         self.assertEqual(items[0]["id"], shop_cart_item.id)
-#         self.assertEqual(items[0]["product_id"], shop_cart_item.product_id)
-#         self.assertEqual(items[0]["shop_cart_id"], shop_cart_item.shop_cart_id)
-#         self.assertEqual(items[0]["quantity"], shop_cart_item.quantity)
-#         self.assertEqual(items[0]["price"], shop_cart_item.price)
+    #     def test_deserialize_shop_cart(self):
+    #         """It should deserialize a Shop Cart"""
+    #         data = ShopCartFactory().serialize()
+    #         shop_cart = ShopCart()
+    #         shop_cart.deserialize(data)
+    #         self.assertNotEqual(shop_cart, None)
+    #         self.assertEqual(shop_cart.id, None)
+    #         self.assertEqual(shop_cart.user_id, data["user_id"])
+    #         self.assertEqual(shop_cart.name, data["name"])
+    #         self.assertEqual(shop_cart.total_price, data["total_price"])
+    #         self.assertEqual(shop_cart.status.name, data["status"])
 
-#     def test_deserialize_shop_cart(self):
-#         """It should deserialize a Shop Cart"""
-#         data = ShopCartFactory().serialize()
-#         shop_cart = ShopCart()
-#         shop_cart.deserialize(data)
-#         self.assertNotEqual(shop_cart, None)
-#         self.assertEqual(shop_cart.id, None)
-#         self.assertEqual(shop_cart.user_id, data["user_id"])
-#         self.assertEqual(shop_cart.name, data["name"])
-#         self.assertEqual(shop_cart.total_price, data["total_price"])
-#         self.assertEqual(shop_cart.status.name, data["status"])
+    #     # + + + + + + + + + + + + + SAD PATHS + + + + + + + + + + + + + + +
+    def test_update_no_id(self):
+        """It should not update a Shop Cart"""
+        shop_cart = ShopCartFactory()
+        logging.debug(shop_cart)
+        shop_cart.id = None
+        self.assertRaises(DataValidationError, shop_cart.update)
 
-#     # + + + + + + + + + + + + + SAD PATHS + + + + + + + + + + + + + + +
-#     def test_update_no_id(self):
-#         """It should not update a Shop Cart"""
-#         shop_cart = ShopCartFactory()
-#         logging.debug(shop_cart)
-#         shop_cart.id = None
-#         self.assertRaises(DataValidationError, shop_cart.update)
 
 #     def test_deserialize_missing_data(self):
 #         """It should not deserialize a ShopCart with missing data"""

@@ -9,6 +9,7 @@ from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
 from .factories import ShopCartFactory, ShopCartItemFactory
+from decimal import Decimal
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -129,7 +130,83 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), 10)
+ 
+    def test_delete_shopcart(self):
+        """It should Delete a Shopcart"""
+        test_shopcart = self._create_shopcarts(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_shopcart.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
 
+        # TODO: uncomment when get_shopcarts is implemented
+        # response = self.client.get(f"{BASE_URL}/{test_shopcart.id}")
+        # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_shopcart(self):
+        """It should Update an existing ShopCart with all fields"""
+        # Create a shopcart to update
+        test_shopcart = ShopCartFactory()
+        response = self.client.post(BASE_URL, json=test_shopcart.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Prepare update payload with modifications to all fields
+        new_shopcart = response.get_json()
+        update_payload = {
+            "user_id": new_shopcart[
+                "user_id"
+            ],  # Assuming user_id can be updated or is needed for identification
+            "name": "Updated Name",
+            "total_price": deciaml(new_shopcart["total_price"])
+            + 100,  # Example of updating the price
+            # Include updates to other fields here
+        }
+
+        # Update the shopcart
+        response = self.client.put(
+            f"{BASE_URL}/{new_shopcart['id']}", json=update_payload
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_shopcart = response.get_json()
+
+        # Verify that all fields have been updated correctly
+        self.assertEqual(updated_shopcart["name"], update_payload["name"])
+        self.assertEqual(
+            updated_shopcart["total_price"], str(update_payload["total_price"])
+        )
+        # Add assertions for other fields here
+
+        print(updated_shopcart)  # For debugging
+
+    def test_update_shop_cart_with_invalid_fields(self):
+        """It should not update a shopcart with invalid fields and maintain required fields"""
+        # Assuming ShopCartFactory sets a user_id, name, and total_price
+        test_shopcart = ShopCartFactory()
+        response = self.client.post(BASE_URL, json=test_shopcart.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        new_shopcart = response.get_json()
+        update_payload = {
+            "user_id": new_shopcart["user_id"],
+            "name": "Updated Name",
+            "total_price": new_shopcart["total_price"],
+            "non_existent_field": "test",
+        }
+
+        # Attempt to update the shopcart
+        response = self.client.put(
+            f"{BASE_URL}/{new_shopcart['id']}", json=update_payload
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Fetch the updated shopcart and verify the update
+        updated_shopcart = self.client.get(
+            f"{BASE_URL}/{new_shopcart['id']}"
+        ).get_json()
+        # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
+        # Ensure non-existent fields are not added
+        self.assertNotIn("non_existent_field", updated_shopcart)
+        
     def test_create_shopcart_item(self):
         """It should add an item to a shop cart"""
         shop_cart = self._create_shopcarts(1)[0]
