@@ -55,20 +55,20 @@ class TestShopCartItem(TestCase):
     #  T E S T   C A S E S
     ######################################################################
     # + + + + + + + + + + + + + HAPPY PATHS + + + + + + + + + + + + + + +
-    # def test_add_shop_cart_with_item(self):
-    #     """It should create and add a Shop Cart to the database with an item"""
-    #     shop_carts = ShopCart.all()
-    #     self.assertEqual(shop_carts, [])
-    #     shop_cart = ShopCartFactory()
-    #     shop_cart_item = ShopCartItemFactory(shop_cart=shop_cart)
-    #     shop_cart.items.append(shop_cart_item)
-    #     shop_cart.create()
+    def test_add_shop_cart_with_item(self):
+        """It should create and add a Shop Cart to the database with an item"""
+        shop_carts = ShopCart.all()
+        self.assertEqual(shop_carts, [])
+        shop_cart = ShopCartFactory()
+        shop_cart_item = ShopCartItemFactory(shop_cart=shop_cart)
+        shop_cart.items.append(shop_cart_item)
+        shop_cart.create()
 
-    #     self.assertIsNotNone(shop_cart.id)
-    #     shop_carts = ShopCart.all()
-    #     self.assertEqual(len(shop_carts), 1)
-    #     added_shop_cart = ShopCart.find(shop_cart.id)
-    #     self.assertEqual(added_shop_cart.items[0].quantity, shop_cart_item.quantity)
+        self.assertIsNotNone(shop_cart.id)
+        shop_carts = ShopCart.all()
+        self.assertEqual(len(shop_carts), 1)
+        added_shop_cart = ShopCart.find(shop_cart.id)
+        self.assertEqual(added_shop_cart.items[0].quantity, shop_cart_item.quantity)
 
     # def test_read_shop_cart_item(self):
     #     """It should read a single Shop Cart Item from the database"""
