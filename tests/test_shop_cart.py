@@ -14,7 +14,7 @@ from service.models import (
     # ShopCartStatus,
     ShopCartItem,
 )
-from tests.factories import ShopCartFactory
+from tests.factories import ShopCartFactory, ShopCartItemFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -193,8 +193,8 @@ class TestShopCart(TestCase):
     def test_deserialize_shop_cart_item(self):
         """It should deserialize a Shop Cart item"""
         shop_cart = ShopCartFactory()
-        for i in range(3):
-            shop_cart_item = ShopCartItem()
+        for _ in range(3):
+            shop_cart_item = ShopCartItemFactory()
             shop_cart.items.append(shop_cart_item)
         data = shop_cart.serialize()
 
@@ -225,13 +225,11 @@ class TestShopCart(TestCase):
         sc = ShopCart()
         self.assertRaises(DataValidationError, sc.deserialize, data)
 
-    # def test_deserialize_bad_attribute(self):
-    #     """It should not deserialize a Shop Cart with bad attribute"""
-    #     shop_cart = ShopCartFactory()
-    #     data = shop_cart.serialize()
-    #     data["user_id"] = "pasta"
-    #     sc = ShopCart()
-    #     self.assertRaises(DataValidationError, sc.deserialize, data)
+    def test_deserialize_bad_attribute(self):
+        """It should not deserialize a Shop Cart with bad attribute"""
+        data = ""
+        sc = ShopCart()
+        self.assertRaises(DataValidationError, sc.deserialize, data)
 
 
 ######################################################################

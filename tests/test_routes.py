@@ -383,3 +383,4 @@ class TestShopCartService(TestCase):
                     for item in created_items
                 )
             )
+
