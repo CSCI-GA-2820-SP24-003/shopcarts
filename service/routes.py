@@ -244,6 +244,37 @@ def delete_shopcart_items(shopcart_id, item_id):
 
 
 ######################################################################
+# UPDATE A SHOPCART ITEM
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["PUT"])
+def update_shopcart_item(shopcart_id, item_id):
+    """
+    Update an Item
+
+    This endpoint will update an Item based the body that is posted
+    """
+    app.logger.info(
+        "Request to update Item %s for Shopcart id: %s", (item_id, shopcart_id)
+    )
+    check_content_type("application/json")
+
+    # See if the address exists and abort if it doesn't
+    item = ShopCartItem.find(item_id)
+    if not item:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Shopcart with id '{item_id}' could not be found.",
+        )
+
+    # Update from the json in the body of the request
+    item.deserialize(request.get_json())
+    item.id = item_id
+    item.update()
+
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
+######################################################################
 # Checks the ContentType of a request
 ######################################################################
 def check_content_type(content_type):

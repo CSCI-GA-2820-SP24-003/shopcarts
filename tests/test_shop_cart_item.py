@@ -70,38 +70,38 @@ class TestShopCartItem(TestCase):
         added_shop_cart = ShopCart.find(shop_cart.id)
         self.assertEqual(added_shop_cart.items[0].quantity, shop_cart_item.quantity)
 
-    # def test_read_shop_cart_item(self):
-    #     """It should read a single Shop Cart Item from the database"""
-    #     shop_cart_item = ShopCartItemFactory()
-    #     logging.debug(shop_cart_item)
-    #     shop_cart_item.id = None
-    #     shop_cart_item.create()
-    #     self.assertIsNotNone(shop_cart_item.id)
-    #     # Find Shop Cart Item By id
-    #     found_shop_cart_item = ShopCartItem.find(shop_cart_item.id)
-    #     self.assertEqual(found_shop_cart_item.id, shop_cart_item.id)
-    #     self.assertEqual(found_shop_cart_item.quantity, shop_cart_item.quantity)
+    def test_read_shop_cart_item(self):
+        """It should read a single Shop Cart Item from the database"""
+        shop_cart_item = ShopCartItemFactory()
+        logging.debug(shop_cart_item)
+        shop_cart_item.id = None
+        shop_cart_item.create()
+        self.assertIsNotNone(shop_cart_item.id)
+        # Find Shop Cart Item By id
+        found_shop_cart_item = ShopCartItem.find(shop_cart_item.id)
+        self.assertEqual(found_shop_cart_item.id, shop_cart_item.id)
+        self.assertEqual(found_shop_cart_item.quantity, shop_cart_item.quantity)
 
-    # def test_delete_shop_cart_with_item(self):
-    #     """It should delete a Shop Cart with an item"""
-    #     shop_carts = ShopCart.all()
-    #     self.assertEqual(shop_carts, [])
+    def test_delete_shop_cart_with_item(self):
+        """It should delete a Shop Cart with an item"""
+        shop_carts = ShopCart.all()
+        self.assertEqual(shop_carts, [])
 
-    #     shop_cart = ShopCartFactory()
-    #     shop_cart_item = ShopCartItemFactory(shop_cart=shop_cart)
-    #     shop_cart.create()
+        shop_cart = ShopCartFactory()
+        shop_cart_item = ShopCartItemFactory(shop_cart=shop_cart)
+        shop_cart.create()
 
-    #     self.assertIsNotNone(shop_cart.id)
-    #     shop_carts = ShopCart.all()
-    #     self.assertEqual(len(shop_carts), 1)
+        self.assertIsNotNone(shop_cart.id)
+        shop_carts = ShopCart.all()
+        self.assertEqual(len(shop_carts), 1)
 
-    #     shop_cart = ShopCart.find(shop_cart.id)
-    #     shop_cart_item = shop_cart.items[0]
-    #     shop_cart_item.delete()
-    #     shop_cart.update()
+        shop_cart = ShopCart.find(shop_cart.id)
+        shop_cart_item = shop_cart.items[0]
+        shop_cart_item.delete()
+        shop_cart.update()
 
-    #     shop_cart = ShopCart.find(shop_cart.id)
-    #     self.assertEqual(len(shop_cart.items), 0)
+        shop_cart = ShopCart.find(shop_cart.id)
+        self.assertEqual(len(shop_cart.items), 0)
 
     # def test_list_all_shop_cart_items(self):
     #     """It should list all Shop Cart Items in the database"""
