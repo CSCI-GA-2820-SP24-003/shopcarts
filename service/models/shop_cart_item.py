@@ -83,22 +83,22 @@ class ShopCartItem(db.Model, PersistentBase):
         logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.session.get(cls, by_id)
 
-    @classmethod
-    def find_by_name(cls, name):
-        """Returns all ShopCart Items with the given name
+    # @classmethod
+    # def find_by_name(cls, name):
+    #     """Returns all ShopCart Items with the given name
 
-        Args:
-            name (string): the name of the ShopCart Item you want to match
-        """
-        logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+    #     Args:
+    #         name (string): the name of the ShopCart Item you want to match
+    #     """
+    #     logger.info("Processing name query for %s ...", name)
+    #     return cls.query.filter(cls.name == name)
 
-    @classmethod
-    def find_by_shopcart_id(cls, shopcart_id):
-        """Finds a ShopCart by its ID
+    # @classmethod
+    # def find_by_shopcart_id(cls, shopcart_id):
+    #     """Finds a ShopCart by its ID
 
-        Args:
-            shopcart_id (int): the ID of the ShopCart you want to match
-        """
-        logger.info("Processing lookup for shopcart id %s ...", shopcart_id)
-        return cls.query.get(shopcart_id)
+    #     Args:
+    #         shopcart_id (int): the ID of the ShopCart you want to match
+    #     """
+    #     logger.info("Processing lookup for shopcart id %s ...", shopcart_id)
+    #     return cls.query.get(shopcart_id)

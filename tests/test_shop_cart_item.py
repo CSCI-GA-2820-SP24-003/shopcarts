@@ -145,6 +145,12 @@ class TestShopCartItem(TestCase):
         sci = ShopCartItem()
         self.assertRaises(DataValidationError, sci.deserialize, data)
 
+    def test_deserialize_wrong_attr(self):
+        """It should not deserialize a Shop Cart Item with bad attr"""
+        data = {"status": 42}
+        sci = ShopCartItem()
+        self.assertRaises(DataValidationError, sci.deserialize, data)
+
     def test_deserialize_bad_data(self):
         """It should not deserialize a Shop Cart Item with bad data"""
         data = ""
