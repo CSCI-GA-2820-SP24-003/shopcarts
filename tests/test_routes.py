@@ -400,3 +400,19 @@ class TestShopCartService(TestCase):
                     for item in created_items
                 )
             )
+
+    def test_create_shopcart_item_fail(self):
+        """It should raise shopcart not found sign"""
+
+        shopcart = ShopCartFactory()
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn(
+            f"ShopCart with ID '{shopcart.id}' could not be found",
+            resp.data.decode(),
+        )
