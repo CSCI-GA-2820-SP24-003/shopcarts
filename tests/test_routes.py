@@ -224,6 +224,23 @@ class TestShopCartService(TestCase):
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
 
+    def test_get_shopcart_update_fail(self):
+        """It should raise shopcart not found sign"""
+        # get the id of a shopcart
+        shopcart = ShopCartFactory()
+        resp = self.client.put(
+            f"{BASE_URL}/{shopcart.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn(
+            f"ShopCart with id: '{shopcart.id}' was not found.",
+            resp.data.decode(),
+        )
+
+    # ---------------------------------------------------------------------
+    #                I T E M   M E T H O D S
+    # ---------------------------------------------------------------------
+
     def test_create_shopcart_item(self):
         """It should add an item to a shop cart"""
         shop_cart = self._create_shopcarts(1)[0]
@@ -383,4 +400,3 @@ class TestShopCartService(TestCase):
                     for item in created_items
                 )
             )
-
