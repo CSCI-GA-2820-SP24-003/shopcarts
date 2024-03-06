@@ -275,6 +275,36 @@ def update_shopcart_item(shopcart_id, item_id):
 
 
 ######################################################################
+# LIST ITEMS IN A SHOPCART
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/items", methods=["GET"])
+def list_shopcart_items(shopcart_id):
+    """
+    List all Items in a ShopCart
+
+    This endpoint returns all items within a specified shopcart.
+    """
+    app.logger.info("Request to list items for ShopCart id: %s", shopcart_id)
+
+    # Attempting to find the shopcart first to verify it exists
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with id '{shopcart_id}' could not be found.",
+        )
+
+    # items = ShopCartItem.find_by_shopcart_id(shopcart_id)
+    items = shopcart.items
+    if not items:
+        return jsonify([]), status.HTTP_200_OK
+
+    results = [item.serialize() for item in items]
+    app.logger.info("Returning %d items", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
 # Checks the ContentType of a request
 ######################################################################
 def check_content_type(content_type):

@@ -192,9 +192,8 @@ class TestShopCartService(TestCase):
         self.assertEqual(
             updated_shopcart["total_price"], str(update_payload["total_price"])
         )
-        # Add assertions for other fields here
 
-        print(updated_shopcart)  # For debugging
+        print(updated_shopcart)
 
     def test_update_shop_cart_with_invalid_fields(self):
         """It should not update a shopcart with invalid fields and maintain required fields"""
@@ -337,3 +336,50 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["id"], item_id)
         self.assertEqual(data["shop_cart_id"], shopcart.id)
         self.assertEqual(data["quantity"], 3)
+
+    def test_list_shopcart_items(self):
+        """It should List all items in a shopcart"""
+        # Create a shopcart and add multiple items
+        shopcart = self._create_shopcarts(1)[0]
+        num_items = 3
+        created_items = []
+
+        for _ in range(num_items):
+            item = ShopCartItemFactory()
+            resp = self.client.post(
+                f"{BASE_URL}/{shopcart.id}/items",
+                json=item.serialize(),
+                content_type="application/json",
+            )
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+            created_items.append(resp.get_json())
+
+        # Retrieve all items in the shopcart
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+
+        # Assertions for each item's fields
+        self.assertEqual(len(data), num_items)
+        for item_data in data:
+            self.assertTrue(
+                any(item_data["name"] == item["name"] for item in created_items)
+            )
+            self.assertTrue(
+                any(
+                    item_data["product_id"] == item["product_id"]
+                    for item in created_items
+                )
+            )
+            self.assertTrue(
+                any(item_data["quantity"] == item["quantity"] for item in created_items)
+            )
+            self.assertTrue(
+                any(
+                    str(item_data["price"]) == str(item["price"])
+                    for item in created_items
+                )
+            )

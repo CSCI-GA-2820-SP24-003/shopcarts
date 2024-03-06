@@ -103,50 +103,50 @@ class TestShopCartItem(TestCase):
         shop_cart = ShopCart.find(shop_cart.id)
         self.assertEqual(len(shop_cart.items), 0)
 
-    # def test_list_all_shop_cart_items(self):
-    #     """It should list all Shop Cart Items in the database"""
-    #     shop_cart_items = ShopCartItem.all()
-    #     self.assertEqual(shop_cart_items, [])
+    def test_list_all_shop_cart_items(self):
+        """It should list all Shop Cart Items in the database"""
+        shop_cart_items = ShopCartItem.all()
+        self.assertEqual(shop_cart_items, [])
 
-    #     for _ in range(10):
-    #         shop_cart_item = ShopCartItemFactory()
-    #         shop_cart_item.create()
+        for _ in range(10):
+            shop_cart_item = ShopCartItemFactory()
+            shop_cart_item.create()
 
-    #     shop_cart_items = ShopCartItem.all()
-    #     self.assertEqual(len(shop_cart_items), 10)
+        shop_cart_items = ShopCartItem.all()
+        self.assertEqual(len(shop_cart_items), 10)
 
-    # def test_serialize_shop_cart_item(self):
-    #     """It should serialize a Shop Cart Item"""
-    #     shop_cart_item = ShopCartItemFactory()
-    #     data = shop_cart_item.serialize()
-    #     self.assertNotEqual(data, None)
-    #     self.assertEqual(data["id"], shop_cart_item.id)
-    #     self.assertEqual(data["product_id"], shop_cart_item.product_id)
-    #     self.assertEqual(data["shop_cart_id"], shop_cart_item.shop_cart_id)
-    #     self.assertEqual(data["quantity"], shop_cart_item.quantity)
-    #     self.assertEqual(data["price"], shop_cart_item.price)
+    def test_serialize_shop_cart_item(self):
+        """It should serialize a Shop Cart Item"""
+        shop_cart_item = ShopCartItemFactory()
+        data = shop_cart_item.serialize()
+        self.assertNotEqual(data, None)
+        self.assertEqual(data["id"], shop_cart_item.id)
+        self.assertEqual(data["product_id"], shop_cart_item.product_id)
+        self.assertEqual(data["shop_cart_id"], shop_cart_item.shop_cart_id)
+        self.assertEqual(data["quantity"], shop_cart_item.quantity)
+        self.assertEqual(data["price"], shop_cart_item.price)
 
-    # def test_deserialize_shop_cart_item(self):
-    #     """It should deserialize a Shop Cart Item"""
-    #     data = ShopCartItemFactory()
-    #     data.create()
-    #     shop_cart_item = ShopCartItem()
-    #     shop_cart_item.deserialize(data.serialize())
-    #     self.assertNotEqual(shop_cart_item, None)
-    #     self.assertEqual(shop_cart_item.shop_cart_id, data.shop_cart_id)
-    #     self.assertEqual(shop_cart_item.product_id, data.product_id)
-    #     self.assertEqual(shop_cart_item.quantity, data.quantity)
-    #     self.assertEqual(shop_cart_item.price, data.price)
+    def test_deserialize_shop_cart_item(self):
+        """It should deserialize a Shop Cart Item"""
+        data = ShopCartItemFactory()
+        data.create()
+        shop_cart_item = ShopCartItem()
+        shop_cart_item.deserialize(data.serialize())
+        self.assertNotEqual(shop_cart_item, None)
+        self.assertEqual(shop_cart_item.shop_cart_id, data.shop_cart_id)
+        self.assertEqual(shop_cart_item.product_id, data.product_id)
+        self.assertEqual(shop_cart_item.quantity, data.quantity)
+        self.assertEqual(shop_cart_item.price, data.price)
 
     # # # + + + + + + + + + + + + + SAD PATHS + + + + + + + + + + + + + + +
-    # def test_deserialize_missing_data(self):
-    #     """It should not deserialize a Shop Cart Item with missing data"""
-    #     data = {"id": 42, "quantity": 5}
-    #     sci = ShopCartItem()
-    #     self.assertRaises(DataValidationError, sci.deserialize, data)
+    def test_deserialize_missing_data(self):
+        """It should not deserialize a Shop Cart Item with missing data"""
+        data = {"id": 42, "quantity": 5}
+        sci = ShopCartItem()
+        self.assertRaises(DataValidationError, sci.deserialize, data)
 
-    # def test_deserialize_bad_data(self):
-    #     """It should not deserialize a Shop Cart Item with bad data"""
-    #     data = ""
-    #     sci = ShopCartItem()
-    #     self.assertRaises(DataValidationError, sci.deserialize, data)
+    def test_deserialize_bad_data(self):
+        """It should not deserialize a Shop Cart Item with bad data"""
+        data = ""
+        sci = ShopCartItem()
+        self.assertRaises(DataValidationError, sci.deserialize, data)

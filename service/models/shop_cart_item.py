@@ -92,3 +92,13 @@ class ShopCartItem(db.Model, PersistentBase):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_shopcart_id(cls, shopcart_id):
+        """Finds a ShopCart by its ID
+
+        Args:
+            shopcart_id (int): the ID of the ShopCart you want to match
+        """
+        logger.info("Processing lookup for shopcart id %s ...", shopcart_id)
+        return cls.query.get(shopcart_id)
