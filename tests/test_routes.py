@@ -4,12 +4,13 @@ Shop Cart API Service Test Suite
 
 import os
 import logging
+from decimal import Decimal
 from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
 from .factories import ShopCartFactory, ShopCartItemFactory
-from decimal import Decimal
+
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"

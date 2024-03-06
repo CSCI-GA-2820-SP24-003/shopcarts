@@ -1,10 +1,11 @@
 """Test Factory"""
 
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDecimal
+from factory.fuzzy import FuzzyDecimal
 from service.models import ShopCart, ShopCartItem
 
 
+# pylint: disable=too-few-public-methods
 class ShopCartFactory(factory.Factory):
     """Creates fake shop cart instances"""
 
@@ -33,6 +34,7 @@ class ShopCartFactory(factory.Factory):
             self.items = extracted
 
 
+# pylint: disable=too-few-public-methods
 class ShopCartItemFactory(factory.Factory):
     """Creates fake shop cart item instances"""
 
