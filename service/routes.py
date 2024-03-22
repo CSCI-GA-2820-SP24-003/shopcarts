@@ -193,8 +193,11 @@ def create_shopcart_item(shopcart_id):
 
     # Create a message to return
     message = item.serialize()
+    location_url = url_for(
+        "get_shopcart_items", shopcart_id=shopcart.id, item_id=item.id, _external=True
+    )
 
-    return jsonify(message), status.HTTP_201_CREATED
+    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 ######################################################################
