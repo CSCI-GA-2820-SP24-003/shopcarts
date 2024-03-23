@@ -75,6 +75,7 @@ class ShopCart(db.Model, PersistentBase):
                     item = ShopCartItem()
                     item.deserialize(json_item)
                     self.items.append(item)
+        # pylint: disable=duplicate-code
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:

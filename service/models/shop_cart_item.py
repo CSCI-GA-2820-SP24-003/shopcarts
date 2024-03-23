@@ -54,6 +54,7 @@ class ShopCartItem(db.Model, PersistentBase):
             self.product_id = data["product_id"]
             self.quantity = data["quantity"]
             self.price = data["price"]
+        # pylint: disable=duplicate-code
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
