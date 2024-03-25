@@ -190,6 +190,8 @@ def create_shopcart_item(shopcart_id):
     # Append item to the shopcart
     shopcart.items.append(item)
     shopcart.update()
+    # update the total price
+    shopcart.update_total_price()
 
     # Create a message to return
     message = item.serialize()
@@ -243,6 +245,15 @@ def delete_shopcart_items(shopcart_id, item_id):
     if item:
         item.delete()
 
+        # update the total price
+        shopcart = ShopCart.find(shopcart_id)
+        if not shopcart:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"ShopCart with ID '{shopcart_id}' could not be found",
+            )
+        shopcart.update_total_price()
+
     return "", status.HTTP_204_NO_CONTENT
 
 
@@ -273,6 +284,14 @@ def update_shopcart_item(shopcart_id, item_id):
     item.deserialize(request.get_json())
     item.id = item_id
     item.update()
+
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
+    shopcart.update_total_price()
 
     return jsonify(item.serialize()), status.HTTP_200_OK
 

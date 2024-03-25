@@ -473,3 +473,118 @@ class TestShopCartService(TestCase):
         """It should not Create when sending the wrong data"""
         resp = self.client.post(BASE_URL, json={"name": "not enough data"})
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_shopcart_total_price_with_new_item(self):
+        """
+        It should update the shopcart total price
+        once a new item is added
+        """
+        shop_cart = self._create_shopcarts(1)[0]
+        item_1 = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shop_cart.id}/items",
+            json=item_1.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        item_2 = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shop_cart.id}/items",
+            json=item_2.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        resp = self.client.get(
+            f"{BASE_URL}/{shop_cart.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(
+            data["total_price"],
+            str(item_1.price * item_1.quantity + item_2.price * item_2.quantity),
+        )
+
+    def test_shopcart_total_price_with_delete_item(self):
+        """
+        It should update the shopcart total price
+        once an item is deleted
+        """
+        shopcart = self._create_shopcarts(1)[0]
+        # add the first item
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data = resp.get_json()
+        item_id = data["id"]
+
+        # add the second item
+        item_2 = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item_2.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # send delete request to delete the first item
+        resp = self.client.delete(
+            f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # the total price should equal to the second item's total price
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["total_price"], str(item_2.price * item_2.quantity))
+
+    def test_shopcart_total_price_with_update_item(self):
+        """
+        It should update the shopcart total price
+        once an item is updated
+        """
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
+        data["quantity"] = 3
+
+        # send the update back
+        resp = self.client.put(
+            f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            json=data,
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # check total price
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["total_price"], str(item.price * 3))
