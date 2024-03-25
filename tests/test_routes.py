@@ -26,6 +26,7 @@ BASE_URL = "/shopcarts"
 class TestShopCartService(TestCase):
     """REST API Server Tests"""
 
+    # pylint: disable=duplicate-code
     @classmethod
     def setUpClass(cls):
         """Run once before all tests"""
