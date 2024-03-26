@@ -17,6 +17,7 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/shopcarts"
+MAX_NUM = 99999
 
 
 ######################################################################
@@ -291,6 +292,29 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["quantity"], item.quantity)
         self.assertEqual(data["price"], str(item.price))
 
+    def test_get_shopcart_item_when_no_shopcart(self):
+        """It should Get an error when a shopcart id does not exist"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id + MAX_NUM}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_delete_shopcart_item(self):
         """It should delete a shopcart item"""
         shopcart = self._create_shopcarts(1)[0]
@@ -314,6 +338,29 @@ class TestShopCartService(TestCase):
 
         resp = self.client.get(
             f"{BASE_URL}/{shopcart.id}/items/{item_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_shopcart_item_when_no_shopcart(self):
+        """It should Get an error when a shopcart id does not exist"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
+
+        # try to delete an non-exist shopcart
+        resp = self.client.delete(
+            f"{BASE_URL}/{shopcart.id + MAX_NUM}/items/{item_id}",
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
@@ -355,6 +402,31 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["id"], item_id)
         self.assertEqual(data["shop_cart_id"], shopcart.id)
         self.assertEqual(data["quantity"], 3)
+
+    def test_update_shopcart_item_when_no_shopcart(self):
+        """It should Get an error when a shopcart id does not exist"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        item_id = data["id"]
+        data["quantity"] = 3
+
+        # try send the update back
+        resp = self.client.put(
+            f"{BASE_URL}/{shopcart.id + MAX_NUM}/items/{item_id}",
+            json=data,
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_list_shopcart_items(self):
         """It should List all items in a shopcart"""
