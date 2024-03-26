@@ -191,6 +191,9 @@ def create_shopcart_item(shopcart_id):
     shopcart.items.append(item)
     shopcart.update()
 
+    # update the total price
+    shopcart.update_total_price()
+
     # Create a message to return
     message = item.serialize()
     location_url = url_for(
@@ -213,6 +216,14 @@ def get_shopcart_items(shopcart_id, item_id):
     app.logger.info(
         "Request to retrieve Item %s for ShopCart id: %s", (item_id, shopcart_id)
     )
+
+    # Search for the shopcart
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
 
     # See if the item exists and abort if it doesn't
     item = ShopCartItem.find(item_id)
@@ -239,9 +250,20 @@ def delete_shopcart_items(shopcart_id, item_id):
         "Request to delete item %s for a shopcart id: %s", (item_id, shopcart_id)
     )
 
+    # Search for the shopcart
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
+
     item = ShopCartItem.find(item_id)
     if item:
         item.delete()
+
+        # update the total price
+        shopcart.update_total_price()
 
     return "", status.HTTP_204_NO_CONTENT
 
@@ -261,6 +283,14 @@ def update_shopcart_item(shopcart_id, item_id):
     )
     check_content_type("application/json")
 
+    # Search for the shopcart
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
+
     # See if the address exists and abort if it doesn't
     item = ShopCartItem.find(item_id)
     if not item:
@@ -273,6 +303,9 @@ def update_shopcart_item(shopcart_id, item_id):
     item.deserialize(request.get_json())
     item.id = item_id
     item.update()
+
+    # update the total price
+    shopcart.update_total_price()
 
     return jsonify(item.serialize()), status.HTTP_200_OK
 
