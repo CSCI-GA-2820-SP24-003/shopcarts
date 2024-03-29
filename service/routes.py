@@ -188,8 +188,18 @@ def create_shopcart_item(shopcart_id):
     item.deserialize(request.get_json())
 
     # Append item to the shopcart
-    shopcart.items.append(item)
-    shopcart.update()
+    # if the item does exists in the shopcart
+    # change the item quantity by adding one
+    item = ShopCartItem.find(item.name)
+    if item:
+        item.quantity = item.quantity + 1
+        item.update()
+
+    # if the item does not exist in the shopcart
+    # add a new item
+    else:
+        shopcart.items.append(item)
+        shopcart.update()
 
     # update the total price
     shopcart.update_total_price()
