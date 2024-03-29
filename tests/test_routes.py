@@ -261,29 +261,30 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["quantity"], item.quantity)
         self.assertEqual(data["price"], str(item.price))
 
-    # def test_create_shopcart_duplicate_items(self):
-    #     """when adding an item to a shop cart,
-    #     # if the item already exists in the shopcart,
-    #     # add the quantity by 1
-    #     # """
-    # shop_cart = self._create_shopcarts(1)[0]
-    # item = ShopCartItemFactory()
-    # resp = self.client.post(
-    #     f"{BASE_URL}/{shop_cart.id}/items",
-    #     json=item.serialize(),
-    #     content_type="application/json",
-    # )
-    # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-    # data_1 = resp.get_json()
+    def test_create_shopcart_duplicate_items(self):
+        """when adding an item to a shop cart,
+        # if the item already exists in the shopcart,
+        # add the quantity by 1
+        #"""
+        shop_cart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shop_cart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
 
-    # resp = self.client.post(
-    #     f"{BASE_URL}/{shop_cart.id}/items",
-    #     json=item.serialize(),
-    #     content_type="application/json",
-    # )
-    # data_2 = resp.get_json()
-    # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-    # self.assertEqual(data_2["quantity"], data_1["quantity"] + 1)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data_1 = resp.get_json()
+
+        resp = self.client.post(
+            f"{BASE_URL}/{shop_cart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        data_2 = resp.get_json()
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data_2["quantity"], data_1["quantity"] + 1)
 
     def test_get_shopcart_item(self):
         """It should Get an item from a shopcart"""
@@ -317,7 +318,8 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["price"], str(item.price))
 
     def test_get_shopcart_item_when_no_shopcart(self):
-        """It should Get an error when a shopcart id does not exist"""
+        """It should Get an error when a shopcart id does not exist
+        when try to get an item from a shopcart"""
         # create a known item
         shopcart = self._create_shopcarts(1)[0]
         item = ShopCartItemFactory()

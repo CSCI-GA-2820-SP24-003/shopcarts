@@ -190,10 +190,13 @@ def create_shopcart_item(shopcart_id):
     # Append item to the shopcart
     # if the item does exists in the shopcart
     # change the item quantity by adding one
-    item = ShopCartItem.find(item.name)
-    if item:
-        item.quantity = item.quantity + 1
-        item.update()
+    item_orig = ShopCartItem.find_by_name(item.name)
+    if item_orig:
+        item_orig.quantity = item_orig.quantity + 1
+        item_orig.update()
+        # shopcart.items.append(item)
+        # shopcart.update()
+        item = item_orig
 
     # if the item does not exist in the shopcart
     # add a new item
@@ -210,7 +213,11 @@ def create_shopcart_item(shopcart_id):
         "get_shopcart_items", shopcart_id=shopcart.id, item_id=item.id, _external=True
     )
 
-    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+    return (
+        jsonify(message),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
+    )
 
 
 ######################################################################
