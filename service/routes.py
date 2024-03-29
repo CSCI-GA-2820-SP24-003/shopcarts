@@ -192,10 +192,8 @@ def create_shopcart_item(shopcart_id):
     # change the item quantity by adding one
     item_orig = ShopCartItem.find_by_name(item.name)
     if item_orig:
-        item_orig.quantity = item_orig.quantity + 1
+        item_orig.quantity = item_orig.quantity + item.quantity
         item_orig.update()
-        # shopcart.items.append(item)
-        # shopcart.update()
         item = item_orig
 
     # if the item does not exist in the shopcart

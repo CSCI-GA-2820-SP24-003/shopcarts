@@ -268,6 +268,7 @@ class TestShopCartService(TestCase):
         #"""
         shop_cart = self._create_shopcarts(1)[0]
         item = ShopCartItemFactory()
+        item.quantity = 2
         resp = self.client.post(
             f"{BASE_URL}/{shop_cart.id}/items",
             json=item.serialize(),
@@ -284,7 +285,7 @@ class TestShopCartService(TestCase):
         )
         data_2 = resp.get_json()
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(data_2["quantity"], data_1["quantity"] + 1)
+        self.assertEqual(data_2["quantity"], data_1["quantity"] * 2)
 
     def test_get_shopcart_item(self):
         """It should Get an item from a shopcart"""
