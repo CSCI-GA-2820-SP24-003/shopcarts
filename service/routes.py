@@ -188,8 +188,19 @@ def create_shopcart_item(shopcart_id):
     item.deserialize(request.get_json())
 
     # Append item to the shopcart
-    shopcart.items.append(item)
-    shopcart.update()
+    # if the item does exists in the shopcart
+    # change the item quantity by adding one
+    item_orig = ShopCartItem.find_by_name(item.name)
+    if item_orig:
+        item_orig.quantity = item_orig.quantity + item.quantity
+        item_orig.update()
+        item = item_orig
+
+    # if the item does not exist in the shopcart
+    # add a new item
+    else:
+        shopcart.items.append(item)
+        shopcart.update()
 
     # update the total price
     shopcart.update_total_price()
@@ -200,7 +211,11 @@ def create_shopcart_item(shopcart_id):
         "get_shopcart_items", shopcart_id=shopcart.id, item_id=item.id, _external=True
     )
 
-    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+    return (
+        jsonify(message),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
+    )
 
 
 ######################################################################
