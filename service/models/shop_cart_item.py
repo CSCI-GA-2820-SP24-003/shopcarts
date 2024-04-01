@@ -94,6 +94,16 @@ class ShopCartItem(db.Model, PersistentBase):
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name).first()
 
+    @classmethod
+    def find_by_product_id(cls, product_id):
+        """Returns all ShopCart Items with the given product_id
+
+        Args:
+            product_id (string): the product_id of the ShopCart Item you want to match
+        """
+        logger.info("Processing lookup for product_id: %s", product_id)
+        return cls.query.session.get(cls, product_id)
+
     # @classmethod
     # def find_by_shopcart_id(cls, shopcart_id):
     #     """Finds a ShopCart by its ID
