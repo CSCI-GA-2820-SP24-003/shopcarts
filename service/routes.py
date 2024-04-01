@@ -254,7 +254,7 @@ def get_shopcart_items(shopcart_id, item_id):
 ######################################################################
 # RETRIEVE AN ITEM FROM SHOPCART BY PRODUCT ID
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items/<int:product_id>", methods=["GET"])
+@app.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", methods=["GET"])
 def get_shopcart_items_by_product_id(shopcart_id, product_id):
     """
     Get an Item

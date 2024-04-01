@@ -102,7 +102,7 @@ class ShopCartItem(db.Model, PersistentBase):
             product_id (string): the product_id of the ShopCart Item you want to match
         """
         logger.info("Processing lookup for product_id: %s", product_id)
-        return cls.query.session.get(cls, product_id)
+        return cls.query.filter(cls.product_id == product_id).first()
 
     # @classmethod
     # def find_by_shopcart_id(cls, shopcart_id):

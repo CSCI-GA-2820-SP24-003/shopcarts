@@ -360,7 +360,7 @@ class TestShopCartService(TestCase):
 
         # retrieve it back
         resp = self.client.get(
-            f"{BASE_URL}/{shopcart.id}/items/{product_id}",
+            f"{BASE_URL}/{shopcart.id}/products/{product_id}",
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
