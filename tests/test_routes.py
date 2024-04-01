@@ -342,6 +342,37 @@ class TestShopCartService(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_shopcart_item_by_product_id(self):
+        """It should Get an item from a shopcart by product id"""
+        # create a known item
+        shopcart = self._create_shopcarts(1)[0]
+        item = ShopCartItemFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{shopcart.id}/items",
+            json=item.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        product_id = data["product_id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items/{product_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["shop_cart_id"], shopcart.id)
+        self.assertEqual(data["name"], item.name)
+        self.assertEqual(data["product_id"], item.product_id)
+        self.assertEqual(data["quantity"], item.quantity)
+        self.assertEqual(data["price"], str(item.price))
+
     def test_delete_shopcart_item(self):
         """It should delete a shopcart item"""
         shopcart = self._create_shopcarts(1)[0]
