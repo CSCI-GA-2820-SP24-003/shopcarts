@@ -533,6 +533,45 @@ class TestShopCartService(TestCase):
                 )
             )
 
+    def test_list_shopcart_items_with_params(self):
+        """It should List all items in a shopcart filtered using params"""
+        # Create a shopcart and add multiple items
+        shopcart = self._create_shopcarts(1)[0]
+        num_items = 3
+        created_items = []
+
+        for _ in range(num_items):
+            item = ShopCartItemFactory()
+            resp = self.client.post(
+                f"{BASE_URL}/{shopcart.id}/items",
+                json=item.serialize(),
+                content_type="application/json",
+            )
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+            created_items.append(resp.get_json())
+
+        # Retrieve items filtered by name
+        name_filter = created_items[0]["name"]
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items?name={name_filter}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["name"], name_filter)
+
+        # Retrieve items filtered by min_price
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id}/items?max_price={MAX_NUM}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+
+        self.assertEqual(len(data), 3)
+
     def test_create_shopcart_item_fail(self):
         """It should raise shopcart not found sign"""
 

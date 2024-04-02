@@ -25,6 +25,7 @@ from flask import jsonify, request, url_for, abort  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.models import ShopCart, ShopCartItem
 from service.common import status  # HTTP Status Codes
+from decimal import Decimal
 
 
 #####################################################################
@@ -378,12 +379,26 @@ def list_shopcart_items(shopcart_id):
             f"ShopCart with id '{shopcart_id}' could not be found.",
         )
 
+    # Getting query parameters
+    name = request.args.get("name")
+    min_price = request.args.get("min_price")
+    max_price = request.args.get("max_price")
+
+    # pylint: disable=too-many-boolean-expressions
+    filtered_items = []
+    for item in shopcart.items:
+        if (
+            (not name or item.name == name)
+            and (not min_price or item.price >= Decimal(min_price))
+            and (not max_price or item.price <= Decimal(max_price))
+        ):
+            filtered_items.append(item)
+
     # items = ShopCartItem.find_by_shopcart_id(shopcart_id)
-    items = shopcart.items
-    if not items:
+    if not filtered_items:
         return jsonify([]), status.HTTP_200_OK
 
-    results = [item.serialize() for item in items]
+    results = [item.serialize() for item in filtered_items]
     app.logger.info("Returning %d items", len(results))
     return jsonify(results), status.HTTP_200_OK
 
