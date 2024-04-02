@@ -1,8 +1,9 @@
 """Test Factory"""
 
 import factory
-from factory.fuzzy import FuzzyDecimal
+from factory.fuzzy import FuzzyDecimal, FuzzyChoice
 from service.models import ShopCart, ShopCartItem
+from service.models.shop_cart import ShopCartStatus
 
 
 # pylint: disable=too-few-public-methods
@@ -18,9 +19,9 @@ class ShopCartFactory(factory.Factory):
     user_id = factory.Sequence(lambda n: n)
     name = factory.Sequence(lambda n: f"sc-{n}")
     total_price = FuzzyDecimal(0.00, 200.00)
-    # status = FuzzyChoice(
-    #     choices=[ShopCartStatus.ACTIVE, ShopCartStatus.PENDING, ShopCartStatus.INACTIVE]
-    # )
+    status = FuzzyChoice(
+        choices=[ShopCartStatus.ACTIVE, ShopCartStatus.PENDING, ShopCartStatus.INACTIVE]
+    )
 
     @factory.post_generation
     def items(
