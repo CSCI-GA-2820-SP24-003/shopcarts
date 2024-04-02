@@ -126,3 +126,13 @@ class ShopCart(db.Model, PersistentBase):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_user_id(cls, user_id):
+        """Returns all ShopCarts associated with the given user_id
+
+        Args:
+            user_id (int): the user_id associated with the ShopCarts
+        """
+        logger.info("Processing user_id query for %s ...", user_id)
+        return cls.query.filter(cls.user_id == user_id).all()

@@ -240,6 +240,47 @@ class TestShopCartService(TestCase):
             resp.data.decode(),
         )
 
+    def test_search_shopcarts_by_user_id(self):
+        """It should search ShopCarts by User ID"""
+        # Create shopcarts with different user IDs
+        shopcart1 = ShopCartFactory(user_id=1)
+        shopcart2 = ShopCartFactory(user_id=2)
+        shopcart3 = ShopCartFactory(user_id=1)
+        self.client.post(
+            BASE_URL, json=shopcart1.serialize(), content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL, json=shopcart2.serialize(), content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL, json=shopcart3.serialize(), content_type="application/json"
+        )
+
+        # Search for shopcarts with user_id=1
+        resp = self.client.get(f"{BASE_URL}/user/1")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+
+        # Check if the response is a list
+        self.assertIsInstance(data, list)
+
+        # Check if the response contains the correct number of shopcarts with user_id=1
+        self.assertEqual(len(data), 2)
+        for shopcart in data:
+            self.assertEqual(shopcart["user_id"], 1)
+
+    def test_search_shopcarts_by_user_id_not_found(self):
+        """It should return 404 if no ShopCart is found for the given User ID"""
+        # Create a shopcart with user_id=1
+        shopcart = ShopCartFactory(user_id=1)
+        self.client.post(
+            BASE_URL, json=shopcart.serialize(), content_type="application/json"
+        )
+
+        # Search for a shopcart with user_id=2 (which doesn't exist)
+        resp = self.client.get(f"{BASE_URL}/user/2")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
     # ---------------------------------------------------------------------
     #                I T E M   M E T H O D S
     # ---------------------------------------------------------------------
