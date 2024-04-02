@@ -248,6 +248,26 @@ class TestModelQueries(TestCase):
         for sc in found:
             self.assertEqual(sc.name, name)
 
+    def test_find_by_user_id(self):
+        """It should find Shop Carts by user_id"""
+        shop_carts = ShopCartFactory.create_batch(5)
+        for shop_cart in shop_carts:
+            shop_cart.create()
+        user_id = shop_carts[2].user_id
+        found_carts = ShopCart.find_by_user_id(user_id)
+        self.assertGreater(len(found_carts), 0)
+        for cart in found_carts:
+            self.assertEqual(cart.user_id, user_id)
+
+    def test_find_by_user_id_not_found(self):
+        """It should not find a Shop Cart when no match is found"""
+        shop_carts = ShopCartFactory.create_batch(5)
+        for shop_cart in shop_carts:
+            shop_cart.create()
+        user_id = 999  # Assuming no shop cart with this user_id exists
+        found_carts = ShopCart.find_by_user_id(user_id)
+        self.assertEqual(len(found_carts), 0)
+
 
 ######################################################################
 #  E X C E P T I O N S  T E S T   C A S E S
