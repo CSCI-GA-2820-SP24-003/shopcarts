@@ -252,6 +252,39 @@ def get_shopcart_items(shopcart_id, item_id):
 
 
 ######################################################################
+# RETRIEVE AN ITEM FROM SHOPCART BY PRODUCT ID
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", methods=["GET"])
+def get_shopcart_items_by_product_id(shopcart_id, product_id):
+    """
+    Get an Item
+
+    This endpoint returns just an item using the product id
+    """
+    app.logger.info(
+        "Request to retrieve Item %s for ShopCart id: %s", (product_id, shopcart_id)
+    )
+
+    # Search for the shopcart
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with ID '{shopcart_id}' could not be found",
+        )
+
+    # See if the item exists and abort if it doesn't
+    item = ShopCartItem.find_by_product_id(product_id)
+    if not item:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Product with id '{product_id}' could not be found.",
+        )
+
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
+######################################################################
 # DELETE AN ITEM FROM SHOPCART
 ######################################################################
 @app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["DELETE"])
