@@ -63,6 +63,7 @@ class TestShopCart(TestCase):
             "user_id": fake_cart.user_id,
             "name": fake_cart.name,
             "total_price": fake_cart.total_price,
+            "status": fake_cart.status,
         }
         cart = ShopCart()
         cart.deserialize(fake_cart_dict)
@@ -73,6 +74,7 @@ class TestShopCart(TestCase):
         self.assertEqual(cart.user_id, fake_cart.user_id)
         self.assertEqual(cart.name, fake_cart.name)
         self.assertEqual(cart.total_price, fake_cart.total_price)
+        self.assertEqual(cart.status, fake_cart.status)
 
     def test_add_a_shop_cart(self):
         """It should Create a shopcart and add it to the database"""
