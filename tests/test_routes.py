@@ -181,6 +181,7 @@ class TestShopCartService(TestCase):
             "total_price": Decimal(new_shopcart["total_price"])
             + 100,  # Example of updating the price
             # Include updates to other fields here
+            "status": new_shopcart["status"],
         }
 
         # Update the shopcart
@@ -211,6 +212,7 @@ class TestShopCartService(TestCase):
             "name": "Updated Name",
             "total_price": new_shopcart["total_price"],
             "non_existent_field": "test",
+            "status": new_shopcart["status"],
         }
 
         # Attempt to update the shopcart
