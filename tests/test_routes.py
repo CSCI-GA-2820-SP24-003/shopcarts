@@ -211,7 +211,6 @@ class TestShopCartService(TestCase):
             "total_price": new_shopcart["total_price"],
             "status": new_shopcart["status"],
             "non_existent_field": "test",
-            "status": new_shopcart["status"],
         }
 
         # Attempt to update the shopcart
