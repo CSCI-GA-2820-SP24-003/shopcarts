@@ -183,9 +183,8 @@ def update_shopcart_status(shopcart_id):
     if "status" in data:
         shopcart.status = ShopCartStatus[data["status"]]
         shopcart.update()
-
     else:
-        error(status.HTTP_400_BAD_REQUEST, f"status field was not found.")
+        error(status.HTTP_400_BAD_REQUEST, "status field was not found")
 
     app.logger.info(
         "ShopCart with ID: %d updated the status %s.", shopcart.id, data["status"]
