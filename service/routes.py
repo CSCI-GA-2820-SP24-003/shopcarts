@@ -24,6 +24,7 @@ from decimal import Decimal
 from flask import jsonify, request, url_for, abort  # , request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.models import ShopCart, ShopCartItem
+from service.models.shop_cart import ShopCartStatus
 from service.common import status  # HTTP Status Codes
 
 
@@ -155,6 +156,39 @@ def update_shopcarts(shopcart_id):
     shopcart.update()
 
     app.logger.info("ShopCart with ID: %d updated.", shopcart.id)
+    return jsonify(shopcart.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+# UPDATE A ShopCart STATUS
+######################################################################
+@app.route("/shopcarts/<int:shopcart_id>/status", methods=["PATCH"])
+def update_shopcart_status(shopcart_id):
+    """
+    Update a ShopCart status
+
+    This endpoint will update a ShopCart's status based the body that is posted
+    """
+    app.logger.info("Request to update shopcart with id: %d", shopcart_id)
+    check_content_type("application/json")
+
+    shopcart = ShopCart.find(shopcart_id)
+    if not shopcart:
+        error(
+            status.HTTP_404_NOT_FOUND,
+            f"ShopCart with id: '{shopcart_id}' was not found.",
+        )
+
+    data = request.get_json()
+    if "status" in data:
+        shopcart.status = ShopCartStatus[data["status"]]
+        shopcart.update()
+    else:
+        error(status.HTTP_400_BAD_REQUEST, "status field was not found")
+
+    app.logger.info(
+        "ShopCart with ID: %d updated the status %s.", shopcart.id, data["status"]
+    )
     return jsonify(shopcart.serialize()), status.HTTP_200_OK
 
 

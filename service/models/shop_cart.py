@@ -75,6 +75,7 @@ class ShopCart(db.Model, PersistentBase):
             else:
                 # If it's not, assume it's a string and try to convert it
                 self.status = ShopCartStatus[data["status"]]
+
             item_list = data.get("items")
             if item_list:
                 for json_item in item_list:

@@ -197,8 +197,6 @@ class TestShopCartService(TestCase):
             updated_shopcart["total_price"], str(update_payload["total_price"])
         )
 
-        print(updated_shopcart)
-
     def test_update_shop_cart_with_invalid_fields(self):
         """It should not update a shopcart with invalid fields and maintain required fields"""
         # Assuming ShopCartFactory sets a user_id, name, and total_price
@@ -228,6 +226,47 @@ class TestShopCartService(TestCase):
         # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
+
+    def test_update_shopcart_status(self):
+        """It should Update an existing ShopCart with new status"""
+        # Create a shopcart to update
+        test_shopcart = ShopCartFactory()
+        response = self.client.post(BASE_URL, json=test_shopcart.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        shopcart_created = response.get_json()
+
+        # update the status
+        data = {"status": "ACTIVE"}
+        response = self.client.patch(
+            f"{BASE_URL}/{shopcart_created['id']}/status", json=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # check status
+        shopcart_update = response.get_json()
+        self.assertEqual(shopcart_update["status"], "ACTIVE")
+
+        # with invalid data json
+        data = {"stat": "ACTIVE"}
+        response = self.client.patch(
+            f"{BASE_URL}/{shopcart_created['id']}/status", json=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_shopcart_status_with_invalid_id(self):
+        """It should throw an error when the shopcart does not exist
+        when updating the shopcart status"""
+        # Create a shopcart to update
+        test_shopcart = ShopCartFactory()
+
+        # update the status
+        data = {"status": "ACTIVE"}
+        response = self.client.patch(f"{BASE_URL}/{test_shopcart.id}/status", json=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn(
+            f"ShopCart with id: '{test_shopcart.id}' was not found.",
+            response.data.decode(),
+        )
 
     def test_get_shopcart_update_fail(self):
         """It should raise shopcart not found sign"""
@@ -415,6 +454,17 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["quantity"], item.quantity)
         self.assertEqual(data["price"], str(item.price))
+
+        # when shopcart does not exist
+        resp = self.client.get(
+            f"{BASE_URL}/{shopcart.id+ MAX_NUM}/products/{product_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn(
+            f"ShopCart with ID '{shopcart.id + MAX_NUM}' could not be found",
+            resp.data.decode(),
+        )
 
     def test_delete_shopcart_item(self):
         """It should delete a shopcart item"""
