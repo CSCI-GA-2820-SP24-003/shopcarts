@@ -193,6 +193,33 @@ def update_shopcart_status(shopcart_id):
 
 
 ######################################################################
+# SORT SHOPCARTS BY STATUS
+######################################################################
+@app.route("/shopcarts/status/<string:status_name>", methods=["GET"])
+def sort_shopcarts_by_status(status_name):
+    """
+    Sort ShopCarts by Status
+
+    This endpoint will return the ShopCarts sorted by the given status
+    """
+    app.logger.info("Request to sort ShopCarts by Status: %s", status_name)
+
+    # Convert the status string to ShopCartStatus enum
+    try:
+        status_enum = ShopCartStatus[status_name.upper()]
+    except KeyError:
+        abort(
+            status.HTTP_400_BAD_REQUEST,
+            f"Invalid status value: '{status_name}'. Must be one of {[s.name for s in ShopCartStatus]}",
+        )
+
+    shopcarts = ShopCart.find_by_status(status_enum)
+    results = [shopcart.serialize() for shopcart in shopcarts]
+
+    return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
 # SEARCH SHOPCARTS BY USER_ID
 ######################################################################
 @app.route("/shopcarts/user/<int:user_id>", methods=["GET"])

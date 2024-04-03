@@ -143,3 +143,13 @@ class ShopCart(db.Model, PersistentBase):
         """
         logger.info("Processing user_id query for %s ...", user_id)
         return cls.query.filter(cls.user_id == user_id).all()
+
+    @classmethod
+    def find_by_status(cls, status):
+        """Returns all ShopCarts with the given status
+
+        Args:
+            status (ShopCartStatus): the status of the ShopCarts you want to match
+        """
+        logger.info("Processing status query for %s ...", status.name)
+        return cls.query.filter(cls.status == status).all()

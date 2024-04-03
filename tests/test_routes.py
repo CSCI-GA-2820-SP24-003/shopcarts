@@ -9,6 +9,7 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart
+from service.models.shop_cart import ShopCartStatus
 from .factories import ShopCartFactory, ShopCartItemFactory
 
 
@@ -321,6 +322,67 @@ class TestShopCartService(TestCase):
         # Search for a shopcart with user_id=2 (which doesn't exist)
         resp = self.client.get(f"{BASE_URL}/user/2")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_sort_shopcarts_by_status(self):
+        """It should sort ShopCarts by status"""
+        # Create shopcarts with different statuses
+        shopcart1 = ShopCartFactory(status=ShopCartStatus.ACTIVE)
+        shopcart2 = ShopCartFactory(status=ShopCartStatus.PENDING)
+        shopcart3 = ShopCartFactory(status=ShopCartStatus.INACTIVE)
+        self.client.post(
+            BASE_URL, json=shopcart1.serialize(), content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL, json=shopcart2.serialize(), content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL, json=shopcart3.serialize(), content_type="application/json"
+        )
+
+        # Sort shopcarts by ACTIVE status
+        resp = self.client.get(f"{BASE_URL}/status/active")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["status"], "ACTIVE")
+
+        # Sort shopcarts by PENDING status
+        resp = self.client.get(f"{BASE_URL}/status/pending")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["status"], "PENDING")
+
+        # Sort shopcarts by INACTIVE status
+        resp = self.client.get(f"{BASE_URL}/status/inactive")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["status"], "INACTIVE")
+
+    def test_sort_shopcarts_by_status_not_found(self):
+        """It should return an empty list when no ShopCarts are found for a given status"""
+        # Create shopcarts with different statuses
+        shopcart1 = ShopCartFactory(status=ShopCartStatus.ACTIVE)
+        shopcart2 = ShopCartFactory(status=ShopCartStatus.PENDING)
+        self.client.post(
+            BASE_URL, json=shopcart1.serialize(), content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL, json=shopcart2.serialize(), content_type="application/json"
+        )
+
+        # Sort shopcarts by INACTIVE status (which doesn't exist)
+        resp = self.client.get(f"{BASE_URL}/status/inactive")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 0)
+
+    def test_sort_shopcarts_by_invalid_status(self):
+        """It should return a 400 Bad Request when an invalid status value is provided"""
+        # Sort shopcarts by an invalid status value
+        resp = self.client.get(f"{BASE_URL}/status/invalid")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     # ---------------------------------------------------------------------
     #                I T E M   M E T H O D S
