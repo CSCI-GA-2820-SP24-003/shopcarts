@@ -34,10 +34,11 @@ class ShopCart(db.Model, PersistentBase):
     name = db.Column(db.String(63))
     total_price = db.Column(db.Numeric(precision=10, scale=2))
     status = db.Column(
-        db.Enum(
-            ShopCartStatus, nullable=False, server_default=(ShopCartStatus.ACTIVE.name)
-        )
+        db.Enum(ShopCartStatus),
+        nullable=False,
+        server_default=(ShopCartStatus.ACTIVE.name),
     )
+
     items = db.relationship("ShopCartItem", backref="shop_cart", passive_deletes=True)
 
     def __repr__(self):
@@ -132,3 +133,13 @@ class ShopCart(db.Model, PersistentBase):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_user_id(cls, user_id):
+        """Returns all ShopCarts associated with the given user_id
+
+        Args:
+            user_id (int): the user_id associated with the ShopCarts
+        """
+        logger.info("Processing user_id query for %s ...", user_id)
+        return cls.query.filter(cls.user_id == user_id).all()

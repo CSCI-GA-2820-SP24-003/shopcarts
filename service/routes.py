@@ -192,6 +192,29 @@ def update_shopcart_status(shopcart_id):
     return jsonify(shopcart.serialize()), status.HTTP_200_OK
 
 
+######################################################################
+# SEARCH SHOPCARTS BY USER_ID
+######################################################################
+@app.route("/shopcarts/user/<int:user_id>", methods=["GET"])
+def search_shopcarts_by_user_id(user_id):
+    """
+    Search ShopCarts by User ID
+
+    This endpoint will return the ShopCarts associated with the given user_id
+    """
+    app.logger.info("Request to search ShopCarts by User ID: %s", user_id)
+
+    shopcarts = ShopCart.find_by_user_id(user_id)
+    if not shopcarts:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"No ShopCarts found for User ID '{user_id}'.",
+        )
+
+    results = [shopcart.serialize() for shopcart in shopcarts]
+    return jsonify(results), status.HTTP_200_OK
+
+
 # ---------------------------------------------------------------------
 #                I T E M   M E T H O D S
 # ---------------------------------------------------------------------

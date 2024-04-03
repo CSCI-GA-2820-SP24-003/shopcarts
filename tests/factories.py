@@ -1,8 +1,7 @@
 """Test Factory"""
 
 import factory
-from factory.fuzzy import FuzzyDecimal
-from factory.fuzzy import FuzzyChoice
+from factory.fuzzy import FuzzyDecimal, FuzzyChoice
 from service.models import ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
 
