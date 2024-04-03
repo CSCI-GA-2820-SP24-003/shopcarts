@@ -197,8 +197,6 @@ class TestShopCartService(TestCase):
             updated_shopcart["total_price"], str(update_payload["total_price"])
         )
 
-        print(updated_shopcart)
-
     def test_update_shop_cart_with_invalid_fields(self):
         """It should not update a shopcart with invalid fields and maintain required fields"""
         # Assuming ShopCartFactory sets a user_id, name, and total_price
@@ -228,6 +226,39 @@ class TestShopCartService(TestCase):
         # self.assertEqual(updated_shopcart["name"], updated_payload["name"])
         # Ensure non-existent fields are not added
         self.assertNotIn("non_existent_field", updated_shopcart)
+
+    def test_update_shopcart_status(self):
+        """It should Update an existing ShopCart with all fields"""
+        # Create a shopcart to update
+        test_shopcart = ShopCartFactory()
+        response = self.client.patch(BASE_URL, json=test_shopcart.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Prepare update payload with modifications to all fields
+        new_shopcart = response.get_json()
+        update_payload = {
+            "user_id": new_shopcart[
+                "user_id"
+            ],  # Assuming user_id can be updated or is needed for identification
+            "name": "Updated Name",
+            "total_price": Decimal(new_shopcart["total_price"])
+            + 100,  # Example of updating the price
+            # Include updates to other fields here
+            "status": new_shopcart["status"],
+        }
+
+        # Update the shopcart
+        response = self.client.put(
+            f"{BASE_URL}/{new_shopcart['id']}", json=update_payload
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_shopcart = response.get_json()
+
+        # Verify that all fields have been updated correctly
+        self.assertEqual(updated_shopcart["name"], update_payload["name"])
+        self.assertEqual(
+            updated_shopcart["total_price"], str(update_payload["total_price"])
+        )
 
     def test_get_shopcart_update_fail(self):
         """It should raise shopcart not found sign"""
