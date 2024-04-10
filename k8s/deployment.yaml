@@ -24,8 +24,8 @@ spec:
       restartPolicy: Always
       containers:
       - name: shopcart
-        # image: cluster-registry:32000/shopcart:1.0
-        image: shopcart
+        image: cluster-registry:32000/shopcart:1.0
+        #image: shopcart
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
