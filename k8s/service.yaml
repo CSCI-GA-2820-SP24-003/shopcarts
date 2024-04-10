@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: shopcart
 spec:
-  type: ClusterIP
   selector:
     app: shopcart
+  type: ClusterIP
+  internalTrafficPolicy: Local
   ports:
     - name: http
       protocol: TCP
