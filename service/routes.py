@@ -487,6 +487,16 @@ def list_shopcart_items(shopcart_id):
 
 
 ######################################################################
+# health check
+######################################################################
+@app.route("/health", methods=["GET"])
+def read_health():
+    """Endpoint for health check.
+    Returns the health status of the application."""
+    return jsonify({"status": "OK"}), status.HTTP_200_OK
+
+
+######################################################################
 # Checks the ContentType of a request
 ######################################################################
 def check_content_type(content_type):
