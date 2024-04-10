@@ -460,6 +460,15 @@ def list_shopcart_items(shopcart_id):
 
 
 ######################################################################
+# health check
+######################################################################
+@app.get("/health")
+def read_health():
+    results = {"status": "OK"}
+    return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
 # Checks the ContentType of a request
 ######################################################################
 def check_content_type(content_type):
