@@ -851,3 +851,10 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data["total_price"], str(item.price * 3))
+
+    def test_read_health(self):
+        """It should return 200 status and OK
+        when testing health"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json, {"status": "OK"})

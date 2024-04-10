@@ -462,10 +462,11 @@ def list_shopcart_items(shopcart_id):
 ######################################################################
 # health check
 ######################################################################
-@app.get("/health")
+@app.route("/health", methods=["GET"])
 def read_health():
-    results = {"status": "OK"}
-    return jsonify(results), status.HTTP_200_OK
+    """Endpoint for health check.
+    Returns the health status of the application."""
+    return jsonify({"status": "OK"}), status.HTTP_200_OK
 
 
 ######################################################################
