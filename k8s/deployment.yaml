@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hitcounter
+  name: shopcart
   labels:
-    app: hitcounter
+    app: shopcart
 spec:
   replicas: 1
   strategy:
@@ -13,16 +13,16 @@ spec:
       maxUnavailable: 0  
   selector:
     matchLabels:
-      app: hitcounter
+      app: shopcart
   template:
     metadata:
       labels:
-        app: hitcounter
+        app: shopcart
     spec:
       restartPolicy: Always
       containers:
-      - name: hitcounter
-        image: cluster-registry:32000/hitcounter:1.0
+      - name: shopcart
+        image: cluster-registry:32000/shopcart:1.0
         # image: shopcart
         imagePullPolicy: IfNotPresent
         ports:
