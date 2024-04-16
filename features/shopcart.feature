@@ -48,3 +48,24 @@ Scenario: List all shopcarts
     And I should see "dd" in the results
     And I should not see "ee" in the results
 
+Scenario: Delete a Shopcart
+    When I visit the "Home Page"
+    And I set the "User_id" to "6"
+    And I set the "Name" to "ff"
+    And I set the "Total_price" to "6.00"
+    And I select "ACTIVE" in the "Status" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Delete" button
+    Then I should see the message "Shopcart has been Deleted!"
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "aa" in the results
+    And I should see "bb" in the results
+    And I should see "cc" in the results
+    And I should see "dd" in the results
+    And I should not see "ee" in the results
