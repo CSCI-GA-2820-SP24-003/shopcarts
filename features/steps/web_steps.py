@@ -29,6 +29,7 @@ from behave import when, then
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 
 ID_PREFIX = "shopcart_"
 
@@ -70,9 +71,9 @@ def step_impl(context, text, element_name):
 
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
-    element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
+    element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
-    assert element.first_selected_option.text == text
+    assert(element.first_selected_option.text == text)
 
 
 @then('the "{element_name}" field should be empty')
