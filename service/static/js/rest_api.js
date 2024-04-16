@@ -6,27 +6,26 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
-        $("#user_id").val(res.id);
+        $("#shopcart_id").val(res.id);
+        $("#shopcart_user_id").val(res.user_id);
         $("#shopcart_name").val(res.name);
-        $("#total_price").val(res.category);
-        if (res.status == "active") {
-            $("#shopcart_status").val("active");
-        } else if (res.status == "pending")
-            $("#shopcart_status").val("pending");
+        $("#shopcart_total_price").val(res.total_price);
+        if (res.status == "ACTIVE") {
+            $("#shopcart_status").val("ACTIVE");
+        } else if (res.status == "PENDING")
+            $("#shopcart_status").val("PENDING");
           else {
-            $("#shopcart_status").val("inactive");
+            $("#shopcart_status").val("INACTIVE");
         }
-        $("#item_no").val(res.gender);
-        // $("#pet_birthday").val(res.birthday);
     }
 
     /// Clears all form fields
     function clear_form_data() {
-        $("#user_id").val("");
+        $("#shopcart_id").val("");
+        $("#shopcart_user_id").val("");
         $("#shopcart_name").val("");
-        $("#total_price").val("");
+        $("#shopcart_total_price").val("");
         $("#shopcart_status").val("");
-        $("#item_no").val("");
     }
 
     // Updates the flash message area
@@ -35,44 +34,42 @@ $(function () {
         $("#flash_message").append(message);
     }
 
-    // // ****************************************
-    // // Create a Pet
-    // // ****************************************
+    // ****************************************
+    // Create a Shopcart
+    // ****************************************
 
-    // $("#create-btn").click(function () {
+    $("#create-btn").click(function () {
 
-    //     let name = $("#pet_name").val();
-    //     let category = $("#pet_category").val();
-    //     let available = $("#pet_available").val() == "true";
-    //     let gender = $("#pet_gender").val();
-    //     let birthday = $("#pet_birthday").val();
+        let user_id = $("#shopcart_user_id").val();
+        let name = $("#shopcart_name").val();
+        let total_price = $("#shopcart_total_price").val();
+        let status = $("#shopcart_status").val();
 
-    //     let data = {
-    //         "name": name,
-    //         "category": category,
-    //         "available": available,
-    //         "gender": gender,
-    //         "birthday": birthday
-    //     };
+        let data = {
+            "name": name,
+            "user_id": user_id,
+            "total_price": total_price,
+            "status": status,
+        };
 
-    //     $("#flash_message").empty();
+        $("#flash_message").empty();
         
-    //     let ajax = $.ajax({
-    //         type: "POST",
-    //         url: "/pets",
-    //         contentType: "application/json",
-    //         data: JSON.stringify(data),
-    //     });
+        let ajax = $.ajax({
+            type: "POST",
+            url: "/shopcarts",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
 
-    //     ajax.done(function(res){
-    //         update_form_data(res)
-    //         flash_message("Success")
-    //     });
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
 
-    //     ajax.fail(function(res){
-    //         flash_message(res.responseJSON.message)
-    //     });
-    // });
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
 
 
     // // ****************************************
@@ -116,19 +113,19 @@ $(function () {
 
     // });
 
-    // // ****************************************
-    // // Retrieve a Pet
-    // // ****************************************
+    // ****************************************
+    // Retrieve a Shopcart
+    // ****************************************
 
     // $("#retrieve-btn").click(function () {
 
-    //     let pet_id = $("#pet_id").val();
+    //     let shopcart_id = $("#shopcart_id").val();
 
     //     $("#flash_message").empty();
 
     //     let ajax = $.ajax({
     //         type: "GET",
-    //         url: `/pets/${pet_id}`,
+    //         url: `/shopcarts/${shopcart_id}`,
     //         contentType: "application/json",
     //         data: ''
     //     })
