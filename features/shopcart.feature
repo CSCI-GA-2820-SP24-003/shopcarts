@@ -18,9 +18,9 @@ Scenario: The server is running
 
 Scenario: Create a Shopcart
     When I visit the "Home Page"
-    And I set the "User_id" to "5"
-    And I set the "Name" to "ee"
-    And I set the "Total_price" to "5.00"
+    And I set the "User_id" to "111"
+    And I set the "Name" to "test"
+    And I set the "Total_price" to "100.12"
     And I select "ACTIVE" in the "Status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
@@ -33,9 +33,9 @@ Scenario: Create a Shopcart
     When I paste the "Id" field
     And I press the "Retrieve" button
     Then I should see the message "Success"
-    And I should see "5" in the "user_id" field
-    And I should see "ee" in the "name" field
-    And I should see "5.00" in the "Total_price" field
+    And I should see "111" in the "user_id" field
+    And I should see "test" in the "name" field
+    And I should see "100.12" in the "Total_price" field
     And I should see "ACTIVE" in the "Status" dropdown
 
 Scenario: List all shopcarts
@@ -69,3 +69,4 @@ Scenario: Delete a Shopcart
     And I should see "cc" in the results
     And I should see "dd" in the results
     And I should not see "ee" in the results
+

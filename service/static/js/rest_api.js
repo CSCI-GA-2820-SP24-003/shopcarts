@@ -10,13 +10,6 @@ $(function () {
         $("#shopcart_user_id").val(res.user_id);
         $("#shopcart_name").val(res.name);
         $("#shopcart_total_price").val(res.total_price);
-        // if (res.status == "ACTIVE") {
-        //     $("#shopcart_status").val("ACTIVE");
-        // } else if (res.status == "PENDING")
-        //     $("#shopcart_status").val("PENDING");
-        //   else {
-        //     $("#shopcart_status").val("INACTIVE");
-        // }
         $("#shopcart_status").val(res.status);
         //$("#shopcart_items").val(res.items);
     }
@@ -27,7 +20,6 @@ $(function () {
         $("#shopcart_name").val("");
         $("#shopcart_total_price").val("");
         $("#shopcart_status").val("");
-        //$("#shopcart_items").val("");
     }
 
     // Updates the flash message area
