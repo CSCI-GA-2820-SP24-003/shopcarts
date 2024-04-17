@@ -70,3 +70,28 @@ Scenario: Delete a Shopcart
     And I should see "dd" in the results
     And I should not see "ee" in the results
 
+Scenario: Update a Shopcart
+    When I visit the "Home Page"
+    And I set the "User_id" to "5"
+    And I set the "Name" to "ee"
+    And I set the "Total_price" to "5.12"
+    And I select "ACTIVE" in the "Status" dropdown
+    And I press the "Create" button
+    And I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I set the "User_id" to "5"
+    And I set the "Name" to "ee"
+    And I set the "Total_price" to "10.12"
+    And I select "ACTIVE" in the "Status" dropdown
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I press the "Clear" button
+    When I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see "5" in the "user_id" field
+    And I should see "ee" in the "name" field
+    And I should see "10.12" in the "Total_price" field
+    And I should see "ACTIVE" in the "Status" dropdown
+
+
