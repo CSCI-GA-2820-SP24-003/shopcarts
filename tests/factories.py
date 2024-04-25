@@ -4,6 +4,20 @@ import factory
 from factory.fuzzy import FuzzyDecimal, FuzzyChoice
 from service.models import ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
+from decimal import Decimal
+import random
+
+
+class DecimalMine(factory.fuzzy.BaseFuzzyAttribute):
+    def __init__(self, low, high, precision='0.01'):
+        super().__init__()
+        self.low = Decimal(low)
+        self.high = Decimal(high)
+        self.precision = Decimal(precision)
+
+    def fuzz(self):
+        value = Decimal(random.uniform(float(self.low), float(self.high))).quantize(self.precision)
+        return value
 
 
 # pylint: disable=too-few-public-methods
@@ -18,7 +32,7 @@ class ShopCartFactory(factory.Factory):
     id = factory.Sequence(lambda n: n)
     user_id = factory.Sequence(lambda n: n)
     name = factory.Sequence(lambda n: f"sc-{n}")
-    total_price = FuzzyDecimal(0.00, 200.00)
+    total_price = DecimalMine(0.00, 200.00)
     status = FuzzyChoice(
         choices=[ShopCartStatus.ACTIVE, ShopCartStatus.PENDING, ShopCartStatus.INACTIVE]
     )

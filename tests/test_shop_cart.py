@@ -172,7 +172,7 @@ class TestShopCart(TestCase):
         self.assertEqual(data["id"], shop_cart.id)
         self.assertEqual(data["user_id"], shop_cart.user_id)
         self.assertEqual(data["name"], shop_cart.name)
-        self.assertEqual(data["total_price"], shop_cart.total_price)
+        self.assertEqual(data["total_price"], str(shop_cart.total_price))
         self.assertEqual(len(data["items"]), 1)
         items = data["items"]
         self.assertEqual(items[0]["id"], shop_cart_item.id)
