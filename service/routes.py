@@ -57,7 +57,7 @@ shopcart_model = api.inherit(
     "ShopcartModel",
     create_model,
     {
-        "id": fields.String(
+        "id": fields.Integer(
             readOnly=True, description="The unique id assigned internally by service"
         ),
     },
@@ -294,7 +294,7 @@ class FindStatusResource(Resource):
         shopcarts = ShopCart.find_by_status(status_enum)
         results = [shopcart.serialize() for shopcart in shopcarts]
 
-        return jsonify(results), status.HTTP_200_OK
+        return results, status.HTTP_200_OK
 
 
 ######################################################################
