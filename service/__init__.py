@@ -20,8 +20,23 @@ and SQL database
 """
 import sys
 from flask import Flask
+from flask_restx import Api
 from service import config
 from service.common import log_handlers
+
+
+# Document the type of authorization required
+authorizations = {
+    "apikey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+    }
+}
+
+
+# Will be initialize when app is created
+api = None  # pylint: disable=invalid-name
 
 
 ############################################################
@@ -32,6 +47,22 @@ def create_app():
     # Create Flask application
     app = Flask(__name__)
     app.config.from_object(config)
+
+    app.url_map.strict_slashes = False
+
+    # Initialize the RESTX API
+    global api
+    api = Api(
+        app,
+        version="1.0.0",
+        title="Shopcart REST API Service",
+        description="This is the REST API for the Shopcart Service",
+        default="shopcarts",
+        default_label="Shopcart operations",
+        doc="/apidocs",
+        authorizations=authorizations,
+        prefix="/api",
+    )
 
     # Initialize Plugins
     # pylint: disable=import-outside-toplevel
