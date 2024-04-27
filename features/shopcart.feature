@@ -94,4 +94,13 @@ Scenario: Update a Shopcart
     And I should see "10.12" in the "Total_price" field
     And I should see "ACTIVE" in the "Status" dropdown
 
+Scenario: Search for a Shopcart by Name
+    When I visit the "Home Page"
+    And I set the "Name" to "bb"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "bb" in the results
+    And I should not see "aa" in the results
+    And I should not see "cc" in the results
+    And I should not see "dd" in the results
 
