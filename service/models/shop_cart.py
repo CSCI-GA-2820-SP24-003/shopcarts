@@ -50,7 +50,7 @@ class ShopCart(db.Model, PersistentBase):
             "id": self.id,
             "user_id": self.user_id,
             "name": self.name,
-            "total_price": self.total_price,
+            "total_price": float(self.total_price),
             "status": self.status.name,
             "items": [],
         }
@@ -151,5 +151,5 @@ class ShopCart(db.Model, PersistentBase):
         Args:
             status (ShopCartStatus): the status of the ShopCarts you want to match
         """
-        logger.info("Processing status query for %s ...", status.name)
+        logger.info("Processing status query for %s ...", status)
         return cls.query.filter(cls.status == status).all()

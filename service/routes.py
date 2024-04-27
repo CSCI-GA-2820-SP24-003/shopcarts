@@ -21,9 +21,9 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Shop Carts
 """
 from decimal import Decimal
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from flask_restx import Resource, fields  # , reqparse, inputs
+from flask_restx import Resource, fields, reqparse  # , inputs
 from service.models import ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
 from service.common import status  # HTTP Status Codes
@@ -54,7 +54,7 @@ create_item_model = api.model(
     "Item",
     {
         "id": fields.Integer(required=True, description="Id of the shopcart item"),
-        "shopcart_id": fields.Integer(required=True, description="Id of the shopcart"),
+        "shop_cart_id": fields.Integer(required=True, description="Id of the shopcart"),
         "name": fields.String(required=True, description="Name of the item"),
         "product_id": fields.Integer(required=True, description="Id of the product"),
         "quantity": fields.Integer(required=True, description="Quantity of product"),
@@ -70,7 +70,7 @@ item_model = api.inherit(
             readOnly=True,
             description="The Id of the item assigned internally by the service",
         ),
-        "shopcart_id": fields.Integer(
+        "shop_cart_id": fields.Integer(
             readOnly=True,
             description="The Id of the shopcart to which the item belongs",
         ),
@@ -88,6 +88,7 @@ create_shopcart_model = api.model(
         "total_price": fields.Float(
             required=True, description="Total price of the shopcart"
         ),
+        # pylint: disable=protected-access
         "status": fields.String(
             enum=ShopCartStatus._member_names_,
             description="Status of the shopcart",
@@ -116,15 +117,37 @@ shopcart_model = api.inherit(
     },
 )
 
+# query string arguments
+shopcart_args = reqparse.RequestParser()
+shopcart_args.add_argument(
+    "name", type=str, location="args", required=False, help="List Shopcarts by name"
+)
+shopcart_args.add_argument(
+    "status", type=str, location="args", required=False, help="List Shopcarts by status"
+)
+shopcart_args.add_argument(
+    "user_id", type=int, location="args", required=False, help="List Shopcarts by User ID"
+)
 
-@api.route("/shopcarts/<int:shopcart_id>")
-@api.param("shopcart_id", "The Shopcart identifier")
+
+######################################################################
+#  PATH: /shopcarts/{id}
+######################################################################
+@api.route("/shopcarts/<shopcart_id>")
+@api.param("shopcart_id", "The shopcart identifier")
 class ShopcartResource(Resource):
-    """Handles interactions with Shopcarts"""
+    """
+    ShopcartResource class
 
-    ######################################################################
+    Allows the manipulation of a single Shopcart
+    GET /shopcart{id} - Returns a Shopcart with the id
+    PUT /shopcart{id} - Update a Shopcart with the id
+    DELETE /shopcart{id} -  Deletes a Shopcart with the id
+    """
+
+    # ------------------------------------------------------------------
     # RETRIEVE A SHOPCART
-    ######################################################################
+    # ------------------------------------------------------------------
     @api.doc("get_shopcarts")
     @api.response(404, "Shopcart not found")
     @api.marshal_with(shopcart_model)
@@ -144,36 +167,17 @@ class ShopcartResource(Resource):
                 f"Shopcart with id '{shopcart_id}' could not be found.",
             )
 
-        return jsonify(shopcart.serialize()), status.HTTP_200_OK
+        return shopcart.serialize(), status.HTTP_200_OK
 
-    ######################################################################
-    # DELETE A SHOPCART
-    ######################################################################
-    @api.doc("delete_shopcarts")
-    @api.response(204, "Shopcart deleted")
-    def delete(self, shopcart_id):
-        """
-        Delete a Shopcart
-
-        This endpoint will delete a Shopcart based the id specified in the path
-        """
-        app.logger.info("Request to delete shopcart with id: %d", shopcart_id)
-
-        shopcart = ShopCart.find(shopcart_id)
-        if shopcart:
-            shopcart.delete()
-
-        app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
-        return "", status.HTTP_204_NO_CONTENT
-
-    ######################################################################
-    # UPDATE AN EXISTING ShopCart
-    ######################################################################
+    # ------------------------------------------------------------------
+    # UPDATE AN EXISTING SHOPCART
+    # ------------------------------------------------------------------
     @api.doc("update_shopcarts")
     @api.response(404, "Shopcart not found")
-    @api.response(400, "The posted Shopcart data was not valid")
-    @api.response(415, "Invalid header content-type")
-    def update(self, shopcart_id):
+    @api.response(400, "The posted shopcart data was not valid")
+    @api.expect(shopcart_model)
+    @api.marshal_with(shopcart_model)
+    def put(self, shopcart_id):
         """
         Update a ShopCart
 
@@ -188,24 +192,77 @@ class ShopcartResource(Resource):
                 status.HTTP_404_NOT_FOUND,
                 f"ShopCart with id: '{shopcart_id}' was not found.",
             )
-
-        shopcart.deserialize(request.get_json())
+        app.logger.debug("Payload = %s", api.payload)
+        data = api.payload
+        shopcart.deserialize(data)
         shopcart.id = shopcart_id
         shopcart.update()
 
         app.logger.info("ShopCart with ID: %d updated.", shopcart.id)
-        return jsonify(shopcart.serialize()), status.HTTP_200_OK
+        return shopcart.serialize(), status.HTTP_200_OK
 
+    # ------------------------------------------------------------------
+    # DELETE A SHOPCART
+    # ------------------------------------------------------------------
+    @api.doc("delete_shopcarts")
+    @api.response(204, "Shopcart deleted")
+    def delete(self, shopcart_id):
+        """
+        Delete a Shopcart
 
+        This endpoint will delete a Shopcart based the id specified in the path
+        """
+        app.logger.info("Request to delete shopcart with id: %d", shopcart_id)
+
+        shopcart = ShopCart.find(shopcart_id)
+        if shopcart:
+            shopcart.delete()
+            app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
+        return "", status.HTTP_204_NO_CONTENT
+    
+    
+######################################################################
+#  PATH: /shopcarts
+######################################################################
 @api.route("/shopcarts", strict_slashes=False)
 class ShopcartCollection(Resource):
-    """Handles interactions with collections of Shopcarts"""
+    """Handles all interactions with collections of Shopcarts"""
 
-    ######################################################################
-    # CREATE A NEW SHOPCART
-    ######################################################################
+    # ------------------------------------------------------------------
+    # LIST ALL SHOPCARTS
+    # ------------------------------------------------------------------
+    @api.doc("list_shopcarts")
+    @api.expect(shopcart_args, validate=True)
+    @api.marshal_list_with(shopcart_model)
+    def get(self):
+        """List all shop carts"""
+        app.logger.info("Request for Shop Cart list")
+        shop_carts = []
+        args = shopcart_args.parse_args()
+
+        if args.get("user_id"):
+            app.logger.info("Filtering by user_id: %s", args.get("user_id"))
+            shop_carts = ShopCart.find_by_user_id(args.get("user_id"))
+        elif args.get("name"):
+            app.logger.info("Filtering by name: %s", args.get("name"))
+            shop_carts = ShopCart.find_by_name(args.get("name")).all()
+        elif args.get("status"):
+            app.logger.info("Filtering by status: %s", args.get("status"))
+            shop_carts = ShopCart.find_by_status(args.get("status"))
+        else:
+            app.logger.info("Returning unfiltered list.")
+            shop_carts = ShopCart.all()
+            
+        app.logger.info("[%s] shopcarts returned", len(shop_carts))
+        results = [shop_cart.serialize() for shop_cart in shop_carts]
+        return results, status.HTTP_200_OK
+
+    # ------------------------------------------------------------------
+    # ADD A NEW SHOPCART
+    # ------------------------------------------------------------------
     @api.doc("create_shopcarts")
-    @api.response(400, "Invalid shopcart request body")
+    @api.response(400, "The posted data was not valid")
+    @api.expect(create_shopcart_model)
     @api.marshal_with(shopcart_model, code=201)
     def post(self):
         """
@@ -217,130 +274,134 @@ class ShopcartCollection(Resource):
 
         # Create the shopcart
         shopcart = ShopCart()
-        shopcart.deserialize(request.get_json())
+        app.logger.debug("Payload = %s", api.payload)
+        shopcart.deserialize(api.payload)
         shopcart.create()
 
         # Create a message to return
-        message = shopcart.serialize()
-        location_url = url_for(ShopcartResource, shopcart_id=shopcart.id, _external=True)
+        app.logger.info("shopcart with new id [%s] created!", shopcart.id)
+        location_url = api.url_for(ShopcartResource, shopcart_id=shopcart.id, _external=True)
 
-        return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+        return shopcart.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
 
-    ######################################################################
-    #  LIST ALL SHOPCARTS
-    ######################################################################
-    @api.doc("list_shopcarts")
-    @api.marshal_list_with(shopcart_model)
-    def get(self):
-        """List all shop carts"""
-        app.logger.info("Request for Shop Cart list")
-        shop_carts = []
 
-        name = request.args.get("name")
-        if name:
-            shop_carts = ShopCart.find_by_name(name)
+######################################################################
+#  PATH: /shopcarts/{shopcart_id}/status
+######################################################################
+@api.route("/shopcarts/<shopcart_id>/status")
+@api.param("shopcart_id", "The shopcart identifier")
+class UpdateStatusResource(Resource):
+    """update a shopcart status"""
+
+    @api.doc("update_shopcart_status")
+    @api.response(404, "Shopcart not found")
+    @api.response(409, "The Shopcart is not available")
+    def patch(self, shopcart_id):
+        """
+        Update a ShopCart status
+
+        This endpoint will update a ShopCart's status based the body that is posted
+        """
+        app.logger.info("Request to update shopcart with id: %d", shopcart_id)
+        check_content_type("application/json")
+
+        shopcart = ShopCart.find(shopcart_id)
+        if not shopcart:
+            error(
+                status.HTTP_404_NOT_FOUND,
+                f"ShopCart with id: '{shopcart_id}' was not found.",
+            )
+        
+        app.logger.debug("Payload = %s", api.payload)
+        data = api.payload
+        if "status" in data:
+            shopcart.status = ShopCartStatus[data["status"]]
+            shopcart.update()
         else:
-            shop_carts = ShopCart.all()
+            error(status.HTTP_400_BAD_REQUEST, "status field was not found")
 
-        results = [shop_cart.serialize() for shop_cart in shop_carts]
-
-        return jsonify(results), status.HTTP_200_OK
-
-
-######################################################################
-# UPDATE A ShopCart STATUS
-######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/status", methods=["PATCH"])
-def update_shopcart_status(shopcart_id):
-    """
-    Update a ShopCart status
-
-    This endpoint will update a ShopCart's status based the body that is posted
-    """
-    app.logger.info("Request to update shopcart with id: %d", shopcart_id)
-    check_content_type("application/json")
-
-    shopcart = ShopCart.find(shopcart_id)
-    if not shopcart:
-        error(
-            status.HTTP_404_NOT_FOUND,
-            f"ShopCart with id: '{shopcart_id}' was not found.",
+        app.logger.info(
+            "ShopCart with ID: %d updated the status %s.", shopcart.id, data["status"]
         )
-
-    data = request.get_json()
-    if "status" in data:
-        shopcart.status = ShopCartStatus[data["status"]]
-        shopcart.update()
-    else:
-        error(status.HTTP_400_BAD_REQUEST, "status field was not found")
-
-    app.logger.info(
-        "ShopCart with ID: %d updated the status %s.", shopcart.id, data["status"]
-    )
-    return jsonify(shopcart.serialize()), status.HTTP_200_OK
+        return shopcart.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
-# SORT SHOPCARTS BY STATUS
+#  PATH: /shopcarts/status/{status_name}
 ######################################################################
-@app.route("/shopcarts/status/<string:status_name>", methods=["GET"])
-def sort_shopcarts_by_status(status_name):
-    """
-    Sort ShopCarts by Status
+@api.route("/shopcarts/status/<status_name>")
+@api.param("shopcart_status", "The shopcart status")
+class FindStatusResource(Resource):
+    """find shopcarts by status"""
 
-    This endpoint will return the ShopCarts sorted by the given status
-    """
-    app.logger.info("Request to sort ShopCarts by Status: %s", status_name)
+    @api.doc("find_shopcart_by_status")
+    @api.response(404, "status not found")
+    def get(self, status_name):
+        """
+        Sort ShopCarts by Status
 
-    # Convert the status string to ShopCartStatus enum
-    try:
-        status_enum = ShopCartStatus[status_name.upper()]
-    except KeyError:
-        abort(
-            status.HTTP_400_BAD_REQUEST,
-            f"Invalid status value: '{status_name}'. Must be one of {[s.name for s in ShopCartStatus]}",
-        )
+        This endpoint will return the ShopCarts sorted by the given status
+        """
+        app.logger.info("Request to sort ShopCarts by Status: %s", status_name)
 
-    shopcarts = ShopCart.find_by_status(status_enum)
-    results = [shopcart.serialize() for shopcart in shopcarts]
+        # Convert the status string to ShopCartStatus enum
+        try:
+            status_enum = ShopCartStatus[status_name.upper()]
+        except KeyError:
+            abort(
+                status.HTTP_400_BAD_REQUEST,
+                f"Invalid status value: '{status_name}'. Must be one of {[s.name for s in ShopCartStatus]}",
+            )
 
-    return jsonify(results), status.HTTP_200_OK
+        shopcarts = ShopCart.find_by_status(status_enum)
+        results = [shopcart.serialize() for shopcart in shopcarts]
+
+        return results, status.HTTP_200_OK
 
 
 ######################################################################
-# SEARCH SHOPCARTS BY USER_ID
+#  PATH: /shopcarts/user/{user_id}
 ######################################################################
-@app.route("/shopcarts/user/<int:user_id>", methods=["GET"])
-def search_shopcarts_by_user_id(user_id):
-    """
-    Search ShopCarts by User ID
+@api.route("/shopcarts/user/<int:user_id>")
+@api.param("user_id", "The shopcart user_id")
+class UserResource(Resource):
+    """find shopcarts by user_id"""
 
-    This endpoint will return the ShopCarts associated with the given user_id
-    """
-    app.logger.info("Request to search ShopCarts by User ID: %s", user_id)
+    @api.doc("find_shopcart_by_user_id")
+    @api.response(404, "status not found")
+    def get(self, user_id):
+        """
+        Search ShopCarts by User ID
 
-    shopcarts = ShopCart.find_by_user_id(user_id)
-    if not shopcarts:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"No ShopCarts found for User ID '{user_id}'.",
-        )
+        This endpoint will return the ShopCarts associated with the given user_id
+        """
+        app.logger.info("Request to search ShopCarts by User ID: %s", user_id)
 
-    results = [shopcart.serialize() for shopcart in shopcarts]
-    return jsonify(results), status.HTTP_200_OK
+        shopcarts = ShopCart.find_by_user_id(user_id)
+        if not shopcarts:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"No ShopCarts found for User ID '{user_id}'.",
+            )
+
+        results = [shopcart.serialize() for shopcart in shopcarts]
+        return results, status.HTTP_200_OK
 
 
 # ---------------------------------------------------------------------
 #                I T E M   M E T H O D S
 # ---------------------------------------------------------------------
+######################################################################
+#  PATH: /shopcarts/{shopcart_id}/items/{item_id}
+######################################################################
 @api.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>")
 @api.param("shopcart_id", "The Shopcart identifier")
 @api.param("item_id", "The Item identifier")
 class ItemResource(Resource):
     """Handles interactions with Shopcart Items"""
-    ######################################################################
-    # RETRIEVE AN ITEM FROM SHOPCART
-    ######################################################################
+    # ------------------------------------------------------------------
+    # GET SHOPCART ITEM
+    # ------------------------------------------------------------------
     @api.doc("get_shopcart_items")
     @api.response(404, "Shopcart not found")
     @api.response(404, "Item not found")
@@ -371,11 +432,11 @@ class ItemResource(Resource):
                 f"Item with id '{item_id}' could not be found.",
             )
 
-        return jsonify(item.serialize()), status.HTTP_200_OK
-    
-    ######################################################################
-    # DELETE AN ITEM FROM SHOPCART
-    ######################################################################
+        return item.serialize(), status.HTTP_200_OK
+
+    # ------------------------------------------------------------------
+    # DELETE SHOPCART ITEM
+    # ------------------------------------------------------------------
     @api.doc("delete_shopcart_items")
     @api.response(204, "Item deleted")
     @api.response(404, "Shopcart not found")
@@ -405,10 +466,10 @@ class ItemResource(Resource):
             shopcart.update_total_price()
 
         return "", status.HTTP_204_NO_CONTENT
-    
-    ######################################################################
-    # UPDATE A SHOPCART ITEM
-    ######################################################################
+
+    # ------------------------------------------------------------------
+    # UPDATE SHOPCART ITEM
+    # ------------------------------------------------------------------
     @api.doc("update_shopcart_item")
     @api.response(404, "Shopcart not found")
     @api.response(404, "Item not found")
@@ -443,23 +504,26 @@ class ItemResource(Resource):
             )
 
         # Update from the json in the body of the request
-        item.deserialize(request.get_json())
+        item.deserialize(api.payload)
         item.id = item_id
         item.update()
 
         # update the total price
         shopcart.update_total_price()
 
-        return jsonify(item.serialize()), status.HTTP_200_OK
+        return item.serialize(), status.HTTP_200_OK
 
 
+######################################################################
+#  PATH: /shopcarts/{shopcart_id}/items
+######################################################################
 @api.route("/shopcarts/<int:shopcart_id>/items", strict_slashes=False)
 @api.param("shopcart_id", "The Shopcart identifier")
 class ItemCollection(Resource):
     """Handles interactions with collections of Shopcart Items"""
-    ######################################################################
-    # CREATE A NEW SHOPCART ITEM
-    ######################################################################
+    # ------------------------------------------------------------------
+    # CREATE SHOPCART ITEM
+    # ------------------------------------------------------------------
     @api.doc("create_shopcart_item")
     @api.response(400, "Invalid shopcart item request body")
     @api.response(404, "Shopcart not found")
@@ -482,7 +546,7 @@ class ItemCollection(Resource):
 
         # Create item from json data
         item = ShopCartItem()
-        item.deserialize(request.get_json())
+        item.deserialize(api.payload)
 
         # Append item to the shopcart
         # if the item does exists in the shopcart
@@ -503,20 +567,19 @@ class ItemCollection(Resource):
         shopcart.update_total_price()
 
         # Create a message to return
-        message = item.serialize()
-        location_url = url_for(
-            "get_shopcart_items", shopcart_id=shopcart.id, item_id=item.id, _external=True
+        location_url = api.url_for(
+            ItemResource, shopcart_id=shopcart.id, item_id=item.id, _external=True
         )
 
         return (
-            jsonify(message),
+            item.serialize(),
             status.HTTP_201_CREATED,
             {"Location": location_url},
         )
-    
-    ######################################################################
-    # LIST ITEMS IN A SHOPCART
-    ######################################################################
+
+    # ------------------------------------------------------------------
+    # LIST SHOPCART ITEMS
+    # ------------------------------------------------------------------
     @api.doc("list_shopcart_items")
     @api.response(404, "Shopcart not found")
     @api.marshal_list_with(item_model)
@@ -557,40 +620,51 @@ class ItemCollection(Resource):
 
         results = [item.serialize() for item in filtered_items]
         app.logger.info("Returning %d items", len(results))
-        return jsonify(results), status.HTTP_200_OK
+        return results, status.HTTP_200_OK
 
 
 ######################################################################
-# RETRIEVE AN ITEM FROM SHOPCART BY PRODUCT ID
+#  PATH: /shopcarts/{shopcart_id}/products/{product_id}
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", methods=["GET"])
-def get_shopcart_items_by_product_id(shopcart_id, product_id):
-    """
-    Get an Item
+@api.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>")
+@api.param("shopcart_id", "The Shopcart identifier")
+@api.param("product_id", "The Product identifier")
+class ProductResource(Resource):
+    """Handles interactions with Product Items"""
+    # ------------------------------------------------------------------
+    # GET SHOPCART ITEM by PRODUCT ID
+    # ------------------------------------------------------------------
+    @api.doc("get_shopcart_items_by_product_id")
+    @api.response(404, "Shopcart not found")
+    @api.response(404, "Item not found")
+    @api.marshal_with(item_model)
+    def get(self, shopcart_id, product_id):
+        """
+        Get an Item
 
-    This endpoint returns just an item using the product id
-    """
-    app.logger.info(
-        "Request to retrieve Item %s for ShopCart id: %s", (product_id, shopcart_id)
-    )
-
-    # Search for the shopcart
-    shopcart = ShopCart.find(shopcart_id)
-    if not shopcart:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"ShopCart with ID '{shopcart_id}' could not be found",
+        This endpoint returns just an item using the product id
+        """
+        app.logger.info(
+            "Request to retrieve Item %s for ShopCart id: %s", (product_id, shopcart_id)
         )
 
-    # See if the item exists and abort if it doesn't
-    item = ShopCartItem.find_by_product_id(product_id)
-    if not item:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Product with id '{product_id}' could not be found.",
-        )
+        # Search for the shopcart
+        shopcart = ShopCart.find(shopcart_id)
+        if not shopcart:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"ShopCart with ID '{shopcart_id}' could not be found",
+            )
 
-    return jsonify(item.serialize()), status.HTTP_200_OK
+        # See if the item exists and abort if it doesn't
+        item = ShopCartItem.find_by_product_id(product_id)
+        if not item:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Product with id '{product_id}' could not be found.",
+            )
+
+        return item.serialize(), status.HTTP_200_OK
 
 
 ######################################################################

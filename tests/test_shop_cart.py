@@ -172,14 +172,14 @@ class TestShopCart(TestCase):
         self.assertEqual(data["id"], shop_cart.id)
         self.assertEqual(data["user_id"], shop_cart.user_id)
         self.assertEqual(data["name"], shop_cart.name)
-        self.assertEqual(data["total_price"], shop_cart.total_price)
+        self.assertEqual(data["total_price"], float(shop_cart.total_price))
         self.assertEqual(len(data["items"]), 1)
         items = data["items"]
         self.assertEqual(items[0]["id"], shop_cart_item.id)
         self.assertEqual(items[0]["product_id"], shop_cart_item.product_id)
         self.assertEqual(items[0]["shop_cart_id"], shop_cart_item.shop_cart_id)
         self.assertEqual(items[0]["quantity"], shop_cart_item.quantity)
-        self.assertEqual(items[0]["price"], shop_cart_item.price)
+        self.assertEqual(items[0]["price"], float(shop_cart_item.price))
 
     def test_deserialize_shop_cart(self):
         """It should deserialize a Shop Cart"""

@@ -17,7 +17,6 @@
 Module: error_handlers
 """
 from service import api
-from flask import jsonify
 from flask import current_app as app  # Import Flask application
 from service.models import DataValidationError
 from . import status
@@ -29,17 +28,10 @@ from . import status
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """Handles Value Errors from bad data"""
-    return bad_request(error)
-
-
-@app.errorhandler(status.HTTP_400_BAD_REQUEST)
-def bad_request(error):
-    """Handles bad requests with 400_BAD_REQUEST"""
     message = str(error)
-    app.logger.warning(message)
-    return (
-        jsonify(
-            status=status.HTTP_400_BAD_REQUEST, error="Bad Request", message=message
-        ),
-        status.HTTP_400_BAD_REQUEST,
-    )
+    app.logger.error(message)
+    return {
+        "status_code": status.HTTP_400_BAD_REQUEST,
+        "error": "Bad Request",
+        "message": message,
+    }, status.HTTP_400_BAD_REQUEST
