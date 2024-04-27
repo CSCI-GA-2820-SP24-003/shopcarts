@@ -178,80 +178,74 @@ $(function () {
     // ****************************************
     // Search for a Shopcart
     // ****************************************
-
-    $("#search-btn").click(function () {
-
-        let user_id = $("#shopcart_user_id").val();
-        let name = $("#shopcart_name").val();
-        let total_price = $("#shopcart_total_price").val();
-        let status = $("#shopcart_status").val();
-
-        let queryString = ""
-
-        if (user_id) {
-            queryString += 'user_id=' + user_id
-        }
-        if (name) {
-            queryString += 'name=' + name
-        }
-        if (total_price) {
-            if (queryString.length > 0) {
-                queryString += '&total_price=' + total_price
-            } else {
-                queryString += 'total_price=' + total_price
-            }
-        }
-        if (status) {
-            if (queryString.length > 0) {
-                queryString += '&status=' + status
-            } else {
-                queryString += 'status=' + status
-            }
-        }
-
+    $("#search-btn").on("click", function() {
+        let queryParams = "";
+        const user_id = $("#shopcart_user_id").val();
+        const name = $("#shopcart_name").val();
+        const total_price = $("#shopcart_total_price").val();
+        const status = $("#shopcart_status").val();
+    
+        if (user_id) queryParams += `user_id=${user_id}&`;
+        if (name) queryParams += `name=${name}&`;
+        if (total_price) queryParams += `total_price=${total_price}&`;
+        if (status) queryParams += `status=${status}&`;
+    
+        queryParams = queryParams.slice(0, -1); // Remove the trailing &
+    
         $("#flash_message").empty();
-
-        let ajax = $.ajax({
+    
+        $.ajax({
             type: "GET",
-            url: `/shopcarts?${queryString}`,
+            url: `/shopcarts?${queryParams}`,
             contentType: "application/json",
-            data: ''
+            data: ""
         })
-
-        ajax.done(function(res){
-            //alert(res.toSource())
+        .done(function(response) {
             $("#search_results").empty();
-            let table = '<table class="table table-striped" cellpadding="10">'
-            table += '<thead><tr>'
-            table += '<th class="col-md-2">ID</th>'
-            table += '<th class="col-md-2">user_id</th>'
-            table += '<th class="col-md-2">Name</th>'
-            table += '<th class="col-md-2">Total_price</th>'
-            table += '<th class="col-md-2">Status</th>'
-            table += '</tr></thead><tbody>'
-            let firstShopcart = "";
-            for(let i = 0; i < res.length; i++) {
-                let shopcart = res[i];
-                table +=  `<tr id="row_${i}"><td>${shopcart.id}</td><td>${shopcart.user_id}</td><td>${shopcart.name}</td><td>${shopcart.total_price}</td><td>${shopcart.status}</td></tr>`;
-                if (i == 0) {
-                    firstShopcart = shopcart;
-                }
-            }
-            table += '</tbody></table>';
+            const table = $("<table>", { class: "table table-striped", cellpadding: 10 });
+            const thead = $("<thead>").appendTo(table);
+            $("<tr>").appendTo(thead)
+                .append($("<th>", { class: "col-md-2", text: "ID" }))
+                .append($("<th>", { class: "col-md-2", text: "User ID" }))
+                .append($("<th>", { class: "col-md-2", text: "Name" }))
+                .append($("<th>", { class: "col-md-2", text: "Total Price" }))
+                .append($("<th>", { class: "col-md-2", text: "Status" }));
+    
+            const tbody = $("<tbody>").appendTo(table);
+            let firstOrder = null;
+    
+            $.each(response, function(i, order) {
+                const row = $("<tr>", { id: `row_${i}` }).appendTo(tbody);
+                $("<td>").text(order.id).appendTo(row);
+                $("<td>").text(order.user_id).appendTo(row);
+                $("<td>").text(order.name).appendTo(row);
+                $("<td>").text(order.total_price).appendTo(row);
+                $("<td>").text(order.status).appendTo(row);
+    
+                if (i === 0) firstOrder = order;
+            });
+    
             $("#search_results").append(table);
-
-            // copy the first result to the form
-            if (firstShopcart != "") {
-                update_form_data(firstShopcart)
-            }
-
-            flash_message("Success")
+    
+            if (firstOrder !== null) updateFormData(firstOrder);
+    
+            flashMessage("Success");
+        })
+        .fail(function(error) {
+            flashMessage(error.responseJSON.message);
         });
-
-        ajax.fail(function(res){
-            flash_message(res.responseJSON.message)
-        });
-
     });
+    
+    function updateFormData(order) {
+        $("#shopcart_id").val(order.id);
+        $("#shopcart_user_id").val(order.user_id);
+        $("#shopcart_name").val(order.name);
+        $("#shopcart_total_price").val(order.total_price);
+        $("#shopcart_status").val(order.status);
+    }
+    
+    function flashMessage(message) {
+        $("#flash_message").text(message);
+    }
 
 })
