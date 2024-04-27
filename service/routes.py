@@ -219,8 +219,8 @@ class ShopcartResource(Resource):
             shopcart.delete()
             app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
         return "", status.HTTP_204_NO_CONTENT
-    
-    
+
+
 ######################################################################
 #  PATH: /shopcarts
 ######################################################################
@@ -252,7 +252,7 @@ class ShopcartCollection(Resource):
         else:
             app.logger.info("Returning unfiltered list.")
             shop_carts = ShopCart.all()
-            
+
         app.logger.info("[%s] shopcarts returned", len(shop_carts))
         results = [shop_cart.serialize() for shop_cart in shop_carts]
         return results, status.HTTP_200_OK
@@ -311,7 +311,7 @@ class UpdateStatusResource(Resource):
                 status.HTTP_404_NOT_FOUND,
                 f"ShopCart with id: '{shopcart_id}' was not found.",
             )
-        
+
         app.logger.debug("Payload = %s", api.payload)
         data = api.payload
         if "status" in data:

@@ -5,7 +5,6 @@ Shop Cart API Service Test Suite
 import os
 import logging
 from unittest import TestCase
-from decimal import Decimal, ROUND_DOWN
 from wsgi import app
 from service.common import status
 from service.models import db, ShopCart, ShopCartItem
