@@ -165,7 +165,7 @@ class TestShopCart(TestCase):
     def test_serialize_shop_cart(self):
         """It should serialize a Shop Cart"""
         shop_cart = ShopCartFactory()
-        shop_cart_item = ShopCartItem()
+        shop_cart_item = ShopCartItemFactory()
         shop_cart.items.append(shop_cart_item)
         data = shop_cart.serialize()
         self.assertNotEqual(data, None)

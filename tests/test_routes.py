@@ -8,7 +8,7 @@ from unittest import TestCase
 from decimal import Decimal, ROUND_DOWN
 from wsgi import app
 from service.common import status
-from service.models import db, ShopCart
+from service.models import db, ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
 from .factories import ShopCartFactory, ShopCartItemFactory
 
@@ -50,6 +50,7 @@ class TestShopCartService(TestCase):
         """Runs before each test"""
         self.client = app.test_client()
         db.session.query(ShopCart).delete()  # clean up the last tests
+        db.session.query(ShopCartItem).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
@@ -181,7 +182,7 @@ class TestShopCartService(TestCase):
                 "user_id"
             ],  # Assuming user_id can be updated or is needed for identification
             "name": "Updated Name",
-            "total_price": Decimal(new_shopcart["total_price"]) + Decimal('100'),  # Example of updating the price
+            "total_price": new_shopcart["total_price"] + 100,  # Example of updating the price
             # Include updates to other fields here
             "status": new_shopcart["status"],
         }
@@ -195,9 +196,7 @@ class TestShopCartService(TestCase):
 
         # Verify that all fields have been updated correctly
         self.assertEqual(updated_shopcart["name"], update_payload["name"])
-        expected_price = update_payload["total_price"].quantize(Decimal('.001'), rounding=ROUND_DOWN)
-        actual_price = Decimal(updated_shopcart["total_price"]).quantize(Decimal('.001'), rounding=ROUND_DOWN)
-        self.assertEqual(actual_price, expected_price)
+        self.assertEqual(updated_shopcart["total_price"], float(update_payload["total_price"]))
 
     def test_update_shop_cart_with_invalid_fields(self):
         """It should not update a shopcart with invalid fields and maintain required fields"""
@@ -775,6 +774,7 @@ class TestShopCartService(TestCase):
     def test_list_shopcart_item_with_no_item(self):
         """It should raise no items not found sign"""
         shopcart = self._create_shopcarts(1)[0]
+        print(shopcart.id)
         resp = self.client.get(
             f"{BASE_URL}/{shopcart.id}/items",
             content_type="application/json",

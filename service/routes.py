@@ -616,7 +616,7 @@ class ItemCollection(Resource):
 
         # items = ShopCartItem.find_by_shopcart_id(shopcart_id)
         if not filtered_items:
-            return jsonify([]), status.HTTP_200_OK
+            return [], status.HTTP_200_OK
 
         results = [item.serialize() for item in filtered_items]
         app.logger.info("Returning %d items", len(results))
@@ -626,7 +626,7 @@ class ItemCollection(Resource):
 ######################################################################
 #  PATH: /shopcarts/{shopcart_id}/products/{product_id}
 ######################################################################
-@api.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>")
+@api.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", strict_slashes=False)
 @api.param("shopcart_id", "The Shopcart identifier")
 @api.param("product_id", "The Product identifier")
 class ProductResource(Resource):
