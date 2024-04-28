@@ -1,3 +1,4 @@
+# spell: ignore shopcart shopcarts psycopg testdb
 """
 Test cases for ShopCart Model
 """
