@@ -22,7 +22,10 @@ import sys
 from flask import Flask
 from service import config
 from service.common import log_handlers
+from flask_restx import Api
 
+# Will be initialize when app is created
+api = None  # pylint: disable=invalid-name
 
 ############################################################
 # Initialize the Flask instance
@@ -36,6 +39,21 @@ def create_app():
     # Initialize Plugins
     # pylint: disable=import-outside-toplevel
     from service.models.persistent_base import db
+    
+    ######################################################################
+    # Configure Swagger before initializing it
+    ######################################################################
+    global api
+    api = Api(
+        app,
+        version="1.0.0",
+        title="Shopcart Demo REST API Service",
+        description="This is a sample server Shopcart server.",
+        default="Shopcarts",
+        default_label="Shopcart operations",
+        doc="/apidocs",  # default also could use doc='/apidocs/',
+        prefix="/api",
+    )
 
     db.init_app(app)
 

@@ -7,8 +7,6 @@ from enum import Enum
 from .persistent_base import db, logger, DataValidationError, PersistentBase
 from .shop_cart_item import ShopCartItem
 
-# from decimal import Decimal
-
 
 class ShopCartStatus(Enum):
     """Enumeration of different shop cart statuses"""
@@ -50,7 +48,7 @@ class ShopCart(db.Model, PersistentBase):
             "id": self.id,
             "user_id": self.user_id,
             "name": self.name,
-            "total_price": self.total_price,
+            "total_price": str(self.total_price),
             "status": self.status.name,
             "items": [],
         }
