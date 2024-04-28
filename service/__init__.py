@@ -23,9 +23,11 @@ from flask import Flask
 from service import config
 from service.common import log_handlers
 from flask_restx import Api
+from service.models.persistent_base import db
 
 # Will be initialize when app is created
 api = None  # pylint: disable=invalid-name
+
 
 ############################################################
 # Initialize the Flask instance
@@ -38,8 +40,10 @@ def create_app():
 
     # Initialize Plugins
     # pylint: disable=import-outside-toplevel
-    from service.models.persistent_base import db
-    
+
+    # Turn off strict slashes because it violates best practices
+    app.url_map.strict_slashes = False
+
     ######################################################################
     # Configure Swagger before initializing it
     ######################################################################
@@ -65,6 +69,7 @@ def create_app():
 
         try:
             db.create_all()
+            # models.Shopcart.init_db(app.config["CLOUDANT_DBNAME"])
         except Exception as error:  # pylint: disable=broad-except
             app.logger.critical("%s: Cannot continue", error)
             # gunicorn requires exit code 4 to stop spawning workers when they die
@@ -74,7 +79,7 @@ def create_app():
         log_handlers.init_logging(app, "gunicorn.error")
 
         app.logger.info(70 * "*")
-        app.logger.info("  S E R V I C E   R U N N I N G  ".center(70, "*"))
+        app.logger.info("SHOPCART  S E R V I C E   R U N N I N G  ".center(70, "*"))
         app.logger.info(70 * "*")
 
         app.logger.info("Service initialized!")

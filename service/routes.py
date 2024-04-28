@@ -27,8 +27,7 @@ from flask_restx import Resource, fields, reqparse, inputs
 from service.models import ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
 from service.common import status  # HTTP Status Codes
-from . import api 
-
+from . import api
 
 
 #####################################################################
@@ -39,17 +38,22 @@ def index():
     """Base URL for our service"""
     return app.send_static_file("index.html")
 
+
 # Define the model so that the docs reflect what can be sent
 create_model = api.model(
     "Shopcart",
     {
-        "user_id": fields.Integer(required=True, description="The user_id of the Shopcart owner"),
+        "user_id": fields.Integer(
+            required=True, description="The user_id of the Shopcart owner"
+        ),
         "name": fields.String(required=True, description="The name of the Shopcart"),
-        "total_price": fields.Float(required=True, description="The total price of the Shopcart"),
+        "total_price": fields.Float(
+            required=True, description="The total price of the Shopcart"
+        ),
         # pylint: disable=protected-access
         "status": fields.String(
             enum=ShopCartStatus._member_names_, description="The status of the Shopcart"
-        )
+        ),
     },
 )
 
@@ -68,6 +72,7 @@ shopcart_args = reqparse.RequestParser()
 shopcart_args.add_argument(
     "name", type=str, location="args", required=False, help="List Shopcarts by name"
 )
+
 
 ######################################################################
 #  PATH: /shopcarts/{id}
@@ -107,7 +112,7 @@ class ShopcartResource(Resource):
             )
 
         return shopcart.serialize(), status.HTTP_200_OK
-    
+
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING SHOPCART
     # ------------------------------------------------------------------
@@ -158,8 +163,8 @@ class ShopcartResource(Resource):
             shopcart.delete()
             app.logger.info("Shopcart with ID: %d delete complete.", shopcart_id)
         return "", status.HTTP_204_NO_CONTENT
-    
-    
+
+
 ######################################################################
 #  PATH: /shopcarts
 ######################################################################
@@ -191,7 +196,7 @@ class ShopcartCollection(Resource):
         else:
             app.logger.info("Returning unfiltered list.")
             shop_carts = ShopCart.all()
-            
+
         app.logger.info("[%s] shopcarts returned", len(shop_carts))
         results = [shop_cart.serialize() for shop_cart in shop_carts]
         return results, status.HTTP_200_OK
@@ -219,9 +224,12 @@ class ShopcartCollection(Resource):
 
         # Create a message to return
         app.logger.info("shopcart with new id [%s] created!", shopcart.id)
-        location_url = api.url_for(ShopcartResource, shopcart_id=shopcart.id, _external=True)
-        
+        location_url = api.url_for(
+            ShopcartResource, shopcart_id=shopcart.id, _external=True
+        )
+
         return shopcart.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
+
 
 ######################################################################
 #  PATH: /shopcarts/{shopcart_id}/status
@@ -249,7 +257,7 @@ class UpdateStatusResource(Resource):
                 status.HTTP_404_NOT_FOUND,
                 f"ShopCart with id: '{shopcart_id}' was not found.",
             )
-        
+
         app.logger.debug("Payload = %s", api.payload)
         data = api.payload
         if "status" in data:
@@ -326,7 +334,6 @@ class UserResource(Resource):
         return results, status.HTTP_200_OK
 
 
-
 # ---------------------------------------------------------------------
 #                I T E M   M E T H O D S
 # ---------------------------------------------------------------------
@@ -335,7 +342,7 @@ class UserResource(Resource):
 ######################################################################
 # CREATE A NEW SHOPCART ITEM
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items", methods=["POST"])
+@app.route("/api/shopcarts/<int:shopcart_id>/items", methods=["POST"])
 def create_shopcart_item(shopcart_id):
     """
     Creates a shop cart item
@@ -390,7 +397,7 @@ def create_shopcart_item(shopcart_id):
 ######################################################################
 # RETRIEVE AN ITEM FROM SHOPCART
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["GET"])
+@app.route("/api/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["GET"])
 def get_shopcart_items(shopcart_id, item_id):
     """
     Get an Item
@@ -423,7 +430,9 @@ def get_shopcart_items(shopcart_id, item_id):
 ######################################################################
 # RETRIEVE AN ITEM FROM SHOPCART BY PRODUCT ID
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", methods=["GET"])
+@app.route(
+    "/api/shopcarts/<int:shopcart_id>/products/<int:product_id>", methods=["GET"]
+)
 def get_shopcart_items_by_product_id(shopcart_id, product_id):
     """
     Get an Item
@@ -456,7 +465,7 @@ def get_shopcart_items_by_product_id(shopcart_id, product_id):
 ######################################################################
 # DELETE AN ITEM FROM SHOPCART
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["DELETE"])
+@app.route("/api/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["DELETE"])
 def delete_shopcart_items(shopcart_id, item_id):
     """
     Delete shopcart item
@@ -488,7 +497,7 @@ def delete_shopcart_items(shopcart_id, item_id):
 ######################################################################
 # UPDATE A SHOPCART ITEM
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["PUT"])
+@app.route("/api/shopcarts/<int:shopcart_id>/items/<int:item_id>", methods=["PUT"])
 def update_shopcart_item(shopcart_id, item_id):
     """
     Update an Item
@@ -530,7 +539,7 @@ def update_shopcart_item(shopcart_id, item_id):
 ######################################################################
 # LIST ITEMS IN A SHOPCART
 ######################################################################
-@app.route("/shopcarts/<int:shopcart_id>/items", methods=["GET"])
+@app.route("/api/shopcarts/<int:shopcart_id>/items", methods=["GET"])
 def list_shopcart_items(shopcart_id):
     """
     List all Items in a ShopCart
