@@ -1,6 +1,6 @@
 # NYU DevOps Project Template
 
-[![CI Build](https://github.com/CSCI-GA-2820-SP24-003/shopcarts/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-SP24-003/shopcarts/actions/workflows/ci.yml)
+[![CI Build](https://github.com/CSCI-GA-2820-SP24-003/shopcarts/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-SP24-003/shopcarts/actions/workflows/tdd.yml)
 [![codecov](https://codecov.io/gh/CSCI-GA-2820-SP24-003/shopcarts/graph/badge.svg?token=MM379ZQE9D)](https://codecov.io/gh/CSCI-GA-2820-SP24-003/shopcarts)
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

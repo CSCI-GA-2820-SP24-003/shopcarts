@@ -9,4 +9,3 @@ from .shop_cart import ShopCart
 
 # , ShopCartStatus
 from .shop_cart_item import ShopCartItem
-
