@@ -24,6 +24,8 @@ from flask_restx import Api
 from service import config
 from service.common import log_handlers
 
+# Will be initialize when app is created
+api = None  # pylint: disable=invalid-name
 
 # Document the type of authorization required
 authorizations = {
@@ -33,10 +35,6 @@ authorizations = {
         "name": "X-Api-Key",
     }
 }
-
-
-# Will be initialize when app is created
-api = None  # pylint: disable=invalid-name
 
 
 ############################################################
@@ -72,8 +70,8 @@ def create_app():
 
     with app.app_context():
         # Dependencies require we import the routes AFTER the Flask app is created
-        # pylint: disable=wrong-import-position, wrong-import-order, unused-import
-        from service import routes  # noqa: F401 E402
+        # pylint: disable=wrong-import-position, wrong-import-order, unused-import, cyclic-import
+        from service import routes, models  # noqa: F401 E402
         from service.common import error_handlers, cli_commands  # noqa: F401, E402
 
         try:

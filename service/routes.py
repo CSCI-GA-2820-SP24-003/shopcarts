@@ -21,11 +21,9 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Shop Carts
 """
 from decimal import Decimal
-from flask import jsonify, request, abort
-from flask import current_app as app  # Import Flask application
-from flask_restx import Resource, fields, reqparse  # , inputs
-from service.models import ShopCart, ShopCartItem
-from service.models.shop_cart import ShopCartStatus
+from flask import request, abort, current_app as app
+from flask_restx import Resource, fields, reqparse
+from service.models.shop_cart import ShopCart, ShopCartItem, ShopCartStatus
 from service.common import status  # HTTP Status Codes
 from . import api
 
@@ -39,17 +37,16 @@ def index():
     return app.send_static_file("index.html")
 
 
-######################################################################
+############################################################
 # HEALTH CHECK
-######################################################################
-@app.route("/health", methods=["GET"])
-def read_health():
-    """Endpoint for health check.
-    Returns the health status of the application."""
-    return jsonify({"status": "OK"}), status.HTTP_200_OK
+############################################################
+@app.route("/health")
+def health():
+    """Health Status"""
+    return {"status": "OK"}, status.HTTP_200_OK
 
 
-# Shopcart Item model
+# Define the model so that the docs reflect what can be sent
 create_item_model = api.model(
     "Item",
     {
@@ -126,7 +123,11 @@ shopcart_args.add_argument(
     "status", type=str, location="args", required=False, help="List Shopcarts by status"
 )
 shopcart_args.add_argument(
-    "user_id", type=int, location="args", required=False, help="List Shopcarts by User ID"
+    "user_id",
+    type=int,
+    location="args",
+    required=False,
+    help="List Shopcarts by User ID",
 )
 
 
@@ -140,9 +141,9 @@ class ShopcartResource(Resource):
     ShopcartResource class
 
     Allows the manipulation of a single Shopcart
-    GET /shopcart{id} - Returns a Shopcart with the id
-    PUT /shopcart{id} - Update a Shopcart with the id
-    DELETE /shopcart{id} -  Deletes a Shopcart with the id
+    GET /shopcarts/{id} - Returns a Shopcart with the id
+    PUT /shopcarts/{id} - Update a Shopcart with the id
+    DELETE /shopcarts/{id} -  Deletes a Shopcart with the id
     """
 
     # ------------------------------------------------------------------
@@ -226,7 +227,13 @@ class ShopcartResource(Resource):
 ######################################################################
 @api.route("/shopcarts", strict_slashes=False)
 class ShopcartCollection(Resource):
-    """Handles all interactions with collections of Shopcarts"""
+    """
+    ShopcartCollection class
+
+    Allows the manipulation of a single Shopcart
+    GET /shopcarts - Returns a Shopcart list
+    POST /shopcarts - Creates a new Shopcart
+    """
 
     # ------------------------------------------------------------------
     # LIST ALL SHOPCARTS
@@ -280,7 +287,9 @@ class ShopcartCollection(Resource):
 
         # Create a message to return
         app.logger.info("shopcart with new id [%s] created!", shopcart.id)
-        location_url = api.url_for(ShopcartResource, shopcart_id=shopcart.id, _external=True)
+        location_url = api.url_for(
+            ShopcartResource, shopcart_id=shopcart.id, _external=True
+        )
 
         return shopcart.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
 
@@ -291,7 +300,12 @@ class ShopcartCollection(Resource):
 @api.route("/shopcarts/<shopcart_id>/status")
 @api.param("shopcart_id", "The shopcart identifier")
 class UpdateStatusResource(Resource):
-    """update a shopcart status"""
+    """
+    UpdateStatusResource class
+
+    Allows the manipulation of a single Shopcart status
+    PUT /shopcarts/{id}/status - Update status of a Shopcart
+    """
 
     @api.doc("update_shopcart_status")
     @api.response(404, "Shopcart not found")
@@ -332,7 +346,12 @@ class UpdateStatusResource(Resource):
 @api.route("/shopcarts/status/<status_name>")
 @api.param("shopcart_status", "The shopcart status")
 class FindStatusResource(Resource):
-    """find shopcarts by status"""
+    """
+    FindStatusResource class
+
+    Allows the manipulation of a single Shopcart
+    GET /shopcart/status/{name} - Returns a Shopcart list by status
+    """
 
     @api.doc("find_shopcart_by_status")
     @api.response(404, "status not found")
@@ -399,6 +418,7 @@ class UserResource(Resource):
 @api.param("item_id", "The Item identifier")
 class ItemResource(Resource):
     """Handles interactions with Shopcart Items"""
+
     # ------------------------------------------------------------------
     # GET SHOPCART ITEM
     # ------------------------------------------------------------------
@@ -521,6 +541,7 @@ class ItemResource(Resource):
 @api.param("shopcart_id", "The Shopcart identifier")
 class ItemCollection(Resource):
     """Handles interactions with collections of Shopcart Items"""
+
     # ------------------------------------------------------------------
     # CREATE SHOPCART ITEM
     # ------------------------------------------------------------------
@@ -533,7 +554,9 @@ class ItemCollection(Resource):
         Creates a shop cart item
         This endpoint will create a shop cart item and add it to the shopcart
         """
-        app.logger.info("Request to create an Item for ShopCart with ID: %s", shopcart_id)
+        app.logger.info(
+            "Request to create an Item for ShopCart with ID: %s", shopcart_id
+        )
         check_content_type("application/json")
 
         # Search for the shopcart
@@ -626,11 +649,14 @@ class ItemCollection(Resource):
 ######################################################################
 #  PATH: /shopcarts/{shopcart_id}/products/{product_id}
 ######################################################################
-@api.route("/shopcarts/<int:shopcart_id>/products/<int:product_id>", strict_slashes=False)
+@api.route(
+    "/shopcarts/<int:shopcart_id>/products/<int:product_id>", strict_slashes=False
+)
 @api.param("shopcart_id", "The Shopcart identifier")
 @api.param("product_id", "The Product identifier")
 class ProductResource(Resource):
     """Handles interactions with Product Items"""
+
     # ------------------------------------------------------------------
     # GET SHOPCART ITEM by PRODUCT ID
     # ------------------------------------------------------------------
