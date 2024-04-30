@@ -198,7 +198,7 @@ $(function () {
     
         $.ajax({
             type: "GET",
-            url: `${SHOPCART_SERVICE_BASE_URL}?${queryString}`,
+            url: `${SHOPCART_SERVICE_BASE_URL}?${queryParams}`,
             contentType: "application/json",
             data: ""
         })
@@ -249,5 +249,4 @@ $(function () {
     function flashMessage(message) {
         $("#flash_message").text(message);
     }
-
 })
