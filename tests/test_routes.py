@@ -181,8 +181,8 @@ class TestShopCartService(TestCase):
                 "user_id"
             ],  # Assuming user_id can be updated or is needed for identification
             "name": "Updated Name",
-            "total_price": new_shopcart["total_price"]
-            + 100,  # Example of updating the price
+            "total_price": float(new_shopcart["total_price"])
+            + float(100),  # Example of updating the price
             # Include updates to other fields here
             "status": new_shopcart["status"],
         }
