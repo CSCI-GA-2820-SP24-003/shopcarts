@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shopcart
+  name: shopcarts
   labels:
-    app: shopcart
+    app: shopcarts
 spec:
   replicas: 2
   strategy:
@@ -13,17 +13,17 @@ spec:
       maxUnavailable: 50%
   selector:
     matchLabels:
-      app: shopcart
+      app: shopcarts
   template:
     metadata:
       labels:
-        app: shopcart
+        app: shopcarts
     spec:
       imagePullSecrets:
       - name: all-icr-io
       restartPolicy: Always
       containers:
-      - name: shopcart
+      - name: shopcarts
         image: cluster-registry:32000/shopcarts:latest
         #image: shopcart
         imagePullPolicy: IfNotPresent
