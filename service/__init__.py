@@ -62,10 +62,6 @@ def create_app():
         prefix="/api",
     )
 
-    # Initialize Plugins
-    # pylint: disable=import-outside-toplevel
-    from service.models.persistent_base import db
-
     db.init_app(app)
 
     with app.app_context():
