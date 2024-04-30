@@ -1,25 +1,39 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: '2024-04-29T03:49:01Z'
-  generation: 1
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tekton.dev/v1","kind":"Pipeline","metadata":{"annotations":{},"creationTimestamp":"2024-04-29T03:49:01Z","generation":1,"managedFields":[{"apiVersion":"tekton.dev/v1","fieldsType":"FieldsV1","fieldsV1":{"f:spec":{".":{},"f:finally":{},"f:params":{},"f:tasks":{},"f:workspaces":{}}},"manager":"Mozilla","operation":"Update","time":"2024-04-29T03:49:01Z"}],"name":"cd-pipeline","namespace":"fc2475-dev","resourceVersion":"2172270571","uid":"e709a048-1dae-4884-a299-2aa74065fe01"},"spec":{"params":[{"description":"The url of the github repo","name":"GIT_REPO","type":"string"},{"default":"master","description":"The reference (branch)","name":"GIT_REF","type":"string"}],"tasks":[{"name":"git-clone","params":[{"name":"url","value":"$(params.GIT_REPO)"},{"name":"revision","value":"$(params.GIT_REF)"},{"name":"refspec","value":""},{"name":"submodules","value":"true"},{"name":"depth","value":"1"},{"name":"sslVerify","value":"true"},{"name":"crtFileName","value":"ca-bundle.crt"},{"name":"subdirectory","value":""},{"name":"sparseCheckoutDirectories","value":""},{"name":"deleteExisting","value":"true"},{"name":"httpProxy","value":""},{"name":"httpsProxy","value":""},{"name":"noProxy","value":""},{"name":"verbose","value":"true"},{"name":"gitInitImage","value":"registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:66f219b4d54a41b945cb5715ecd1fbb5d25431cf8dad4b06914a4cdc65b298cc"},{"name":"userHome","value":"/home/git"}],"taskRef":{"kind":"ClusterTask","name":"git-clone"},"workspaces":[{"name":"output","workspace":"pipeline-workspace"}]}],"workspaces":[{"name":"pipeline-workspace"}]}}
+  creationTimestamp: '2024-04-30T13:59:46Z'
+  generation: 3
   managedFields:
     - apiVersion: tekton.dev/v1
       fieldsType: FieldsV1
       fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:kubectl.kubernetes.io/last-applied-configuration': {}
         'f:spec':
           .: {}
-          'f:finally': {}
           'f:params': {}
+      manager: kubectl-client-side-apply
+      operation: Update
+      time: '2024-04-30T13:59:46Z'
+    - apiVersion: tekton.dev/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          'f:finally': {}
           'f:tasks': {}
           'f:workspaces': {}
       manager: Mozilla
       operation: Update
-      time: '2024-04-29T03:49:01Z'
+      time: '2024-04-30T14:33:44Z'
   name: cd-pipeline
   namespace: fc2475-dev
-  resourceVersion: '2172270571'
-  uid: e709a048-1dae-4884-a299-2aa74065fe01
+  resourceVersion: '2177777514'
+  uid: cfaeba82-1736-4204-868e-171d093fa9d5
 spec:
   params:
     - description: The url of the github repo
@@ -69,6 +83,40 @@ spec:
         name: git-clone
       workspaces:
         - name: output
+          workspace: pipeline-workspace
+    - name: pylint
+      params:
+        - name: image
+          value: 'docker.io/python:3.11-slim'
+        - name: path
+          value: service
+        - name: args
+          value: []
+        - name: requirements_file
+          value: requirements.txt
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: pylint
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: testing
+      params:
+        - name: PYTEST_ARGS
+          value: []
+        - name: SECRET_NAME
+          value: postgres-creds
+        - name: SECRET_KEY
+          value: database_uri
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: pytest-env
+      workspaces:
+        - name: source
           workspace: pipeline-workspace
   workspaces:
     - name: pipeline-workspace
