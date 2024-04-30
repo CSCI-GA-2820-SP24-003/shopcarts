@@ -17,10 +17,6 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/api/shopcarts"
-<<<<<<< HEAD
-=======
-BASE_URL_ITEM = "/api/shopcarts"
->>>>>>> master
 CONTENT_TYPE_JSON = "application/json"
 MAX_NUM = 99999
 
