@@ -20,10 +20,12 @@ and SQL database
 """
 import sys
 from flask import Flask
+from flask_restx import Api
 from service import config
 from service.common import log_handlers
-from flask_restx import Api
+
 from service.models.persistent_base import db
+
 
 # Will be initialize when app is created
 api = None  # pylint: disable=invalid-name
@@ -47,24 +49,29 @@ def create_app():
     ######################################################################
     # Configure Swagger before initializing it
     ######################################################################
+
     global api
     api = Api(
         app,
         version="1.0.0",
-        title="Shopcart Demo REST API Service",
-        description="This is a sample server Shopcart server.",
-        default="Shopcarts",
+        title="Shopcart REST API Service",
+        description="This is the REST API for the Shopcart Service",
+        default="shopcarts",
         default_label="Shopcart operations",
-        doc="/apidocs",  # default also could use doc='/apidocs/',
+        doc="/apidocs",
         prefix="/api",
     )
+
+    # Initialize Plugins
+    # pylint: disable=import-outside-toplevel
+    from service.models.persistent_base import db
 
     db.init_app(app)
 
     with app.app_context():
         # Dependencies require we import the routes AFTER the Flask app is created
-        # pylint: disable=wrong-import-position, wrong-import-order, unused-import
-        from service import routes  # noqa: F401 E402
+        # pylint: disable=wrong-import-position, wrong-import-order, unused-import, cyclic-import
+        from service import routes, models  # noqa: F401 E402
         from service.common import error_handlers, cli_commands  # noqa: F401, E402
 
         try:

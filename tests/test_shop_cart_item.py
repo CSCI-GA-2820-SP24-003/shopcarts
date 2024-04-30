@@ -125,7 +125,7 @@ class TestShopCartItem(TestCase):
         self.assertEqual(data["product_id"], shop_cart_item.product_id)
         self.assertEqual(data["shop_cart_id"], shop_cart_item.shop_cart_id)
         self.assertEqual(data["quantity"], shop_cart_item.quantity)
-        self.assertEqual(data["price"], shop_cart_item.price)
+        self.assertEqual(data["price"], float(shop_cart_item.price))
 
     def test_deserialize_shop_cart_item(self):
         """It should deserialize a Shop Cart Item"""
@@ -137,7 +137,7 @@ class TestShopCartItem(TestCase):
         self.assertEqual(shop_cart_item.shop_cart_id, data.shop_cart_id)
         self.assertEqual(shop_cart_item.product_id, data.product_id)
         self.assertEqual(shop_cart_item.quantity, data.quantity)
-        self.assertEqual(shop_cart_item.price, data.price)
+        self.assertEqual(shop_cart_item.price, float(data.price))
 
     # # # + + + + + + + + + + + + + SAD PATHS + + + + + + + + + + + + + + +
     def test_deserialize_missing_data(self):

@@ -4,14 +4,12 @@ Shop Cart API Service Test Suite
 
 import os
 import logging
-from decimal import Decimal
 from unittest import TestCase
 from wsgi import app
 from service.common import status
-from service.models import db, ShopCart
+from service.models import db, ShopCart, ShopCartItem
 from service.models.shop_cart import ShopCartStatus
 from .factories import ShopCartFactory, ShopCartItemFactory
-from decimal import Decimal, ROUND_DOWN
 
 
 DATABASE_URI = os.getenv(
@@ -19,6 +17,10 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/api/shopcarts"
+<<<<<<< HEAD
+=======
+BASE_URL_ITEM = "/api/shopcarts"
+>>>>>>> master
 CONTENT_TYPE_JSON = "application/json"
 MAX_NUM = 99999
 
@@ -50,6 +52,7 @@ class TestShopCartService(TestCase):
         """Runs before each test"""
         self.client = app.test_client()
         db.session.query(ShopCart).delete()  # clean up the last tests
+        db.session.query(ShopCartItem).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
@@ -105,25 +108,25 @@ class TestShopCartService(TestCase):
         )
         self.assertEqual(new_shopcart["name"], shopcart.name, "name does not match")
         self.assertEqual(
-            new_shopcart["total_price"],
+            float(new_shopcart["total_price"]),
             float(shopcart.total_price),
             "total_price does not match",
         )
 
         # Check that the location header was correct by getting it
-        # resp = self.client.get(location, content_type="application/json")
-        # self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        # new_shopcart = resp.get_json()
-        # self.assertEqual(new_shopcart["name"], shopcart.name, "Name does not match")
-        # self.assertEqual(
-        #     new_shopcart["user_id"], shopcart.user_id, "user_id does not match"
-        # )
-        # self.assertEqual(
-        #     float(new_shopcart["total_price"]),
-        #     float(shopcart.total_price),
-        #     "total_price does not match",
-        # )
-        # self.assertEqual(new_shopcart["items"], shopcart.items, "items does not match")
+        resp = self.client.get(location, content_type="application/json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        new_shopcart = resp.get_json()
+        self.assertEqual(new_shopcart["name"], shopcart.name, "Name does not match")
+        self.assertEqual(
+            new_shopcart["user_id"], shopcart.user_id, "user_id does not match"
+        )
+        self.assertEqual(
+            float(new_shopcart["total_price"]),
+            float(shopcart.total_price),
+            "total_price does not match",
+        )
+        self.assertEqual(new_shopcart["items"], shopcart.items, "items does not match")
 
     def test_get_shopcart_by_name(self):
         """It should Get a shopcart by Name"""
@@ -181,8 +184,8 @@ class TestShopCartService(TestCase):
                 "user_id"
             ],  # Assuming user_id can be updated or is needed for identification
             "name": "Updated Name",
-            "total_price": Decimal(new_shopcart["total_price"])
-            + Decimal("100"),  # Example of updating the price
+            "total_price": new_shopcart["total_price"]
+            + 100,  # Example of updating the price
             # Include updates to other fields here
             "status": new_shopcart["status"],
         }
@@ -196,13 +199,10 @@ class TestShopCartService(TestCase):
 
         # Verify that all fields have been updated correctly
         self.assertEqual(updated_shopcart["name"], update_payload["name"])
-        expected_price = update_payload["total_price"].quantize(
-            Decimal(".00001"), rounding=ROUND_DOWN
+        self.assertEqual(
+            round(updated_shopcart["total_price"], 2),
+            round(float(update_payload["total_price"]), 2),
         )
-        actual_price = Decimal(updated_shopcart["total_price"]).quantize(
-            Decimal(".00001"), rounding=ROUND_DOWN
-        )
-        self.assertEqual(float(actual_price), float(expected_price))
 
     def test_update_shop_cart_with_invalid_fields(self):
         """It should not update a shopcart with invalid fields and maintain required fields"""
@@ -409,7 +409,7 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["shop_cart_id"], shop_cart.id)
         self.assertEqual(data["quantity"], item.quantity)
-        self.assertEqual(data["price"], str(item.price))
+        self.assertEqual(data["price"], float(item.price))
 
     def test_create_shopcart_duplicate_items(self):
         """when adding an item to a shop cart,
@@ -466,7 +466,7 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["name"], item.name)
         self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["quantity"], item.quantity)
-        self.assertEqual(data["price"], str(item.price))
+        self.assertEqual(data["price"], float(item.price))
 
     def test_get_shopcart_item_when_no_shopcart(self):
         """It should Get an error when a shopcart id does not exist
@@ -521,7 +521,7 @@ class TestShopCartService(TestCase):
         self.assertEqual(data["name"], item.name)
         self.assertEqual(data["product_id"], item.product_id)
         self.assertEqual(data["quantity"], item.quantity)
-        self.assertEqual(data["price"], str(item.price))
+        self.assertEqual(data["price"], float(item.price))
 
         # when shopcart does not exist
         resp = self.client.get(
@@ -780,6 +780,7 @@ class TestShopCartService(TestCase):
     def test_list_shopcart_item_with_no_item(self):
         """It should raise no items not found sign"""
         shopcart = self._create_shopcarts(1)[0]
+        print(shopcart.id)
         resp = self.client.get(
             f"{BASE_URL}/{shopcart.id}/items",
             content_type="application/json",
@@ -828,7 +829,7 @@ class TestShopCartService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(
-            float(data["total_price"]),
+            data["total_price"],
             float(item_1.price * item_1.quantity + item_2.price * item_2.quantity),
         )
 
@@ -877,9 +878,7 @@ class TestShopCartService(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        self.assertEqual(
-            float(data["total_price"]), float(item_2.price * item_2.quantity)
-        )
+        self.assertEqual(data["total_price"], float(item_2.price * item_2.quantity))
 
     def test_shopcart_total_price_with_update_item(self):
         """
@@ -915,7 +914,7 @@ class TestShopCartService(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        self.assertEqual(float(data["total_price"]), float(item.price * 3))
+        self.assertEqual(data["total_price"], float(item.price * 3))
 
     def test_read_health(self):
         """It should return 200 status and OK
