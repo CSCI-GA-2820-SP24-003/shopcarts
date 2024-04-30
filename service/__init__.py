@@ -28,13 +28,13 @@ from service.common import log_handlers
 api = None  # pylint: disable=invalid-name
 
 # Document the type of authorization required
-authorizations = {
-    "apikey": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-Api-Key",
-    }
-}
+# authorizations = {
+#     "apikey": {
+#         "type": "apiKey",
+#         "in": "header",
+#         "name": "X-Api-Key",
+#     }
+# }
 
 
 ############################################################
@@ -58,7 +58,7 @@ def create_app():
         default="shopcarts",
         default_label="Shopcart operations",
         doc="/apidocs",
-        authorizations=authorizations,
+        # authorizations=authorizations,
         prefix="/api",
     )
 
