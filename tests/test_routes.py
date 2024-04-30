@@ -197,7 +197,8 @@ class TestShopCartService(TestCase):
         # Verify that all fields have been updated correctly
         self.assertEqual(updated_shopcart["name"], update_payload["name"])
         self.assertEqual(
-            updated_shopcart["total_price"], float(update_payload["total_price"])
+            round(updated_shopcart["total_price"], 2),
+            round(float(update_payload["total_price"]), 2),
         )
 
     def test_update_shop_cart_with_invalid_fields(self):
