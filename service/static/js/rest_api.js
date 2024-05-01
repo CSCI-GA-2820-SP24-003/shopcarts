@@ -22,6 +22,7 @@ $(function () {
         $("#shopcart_name").val("");
         $("#shopcart_total_price").val("");
         $("#shopcart_status").val("");
+        $("#shopcart_item").val("");
     }
 
     // Updates the flash message area
@@ -178,6 +179,43 @@ $(function () {
     });
 
     // ****************************************
+    // Add item to Shopcart
+    // ****************************************
+
+    $("#add-btn").click(function () {
+
+        let shopcart_id = $("#shopcart_id").val();
+        let name = $("#shopcart_item").val();
+
+        let data = {
+            "shop_cart_id": shopcart_id,
+            "name": name,
+            "product_id": 1, // Temporary Product ID
+            "quantity": 1,
+            "price": 10 // Standard price for now
+        };
+
+        $("#flash_message").empty();
+        
+        let ajax = $.ajax({
+            type: "POST",
+            url: `${SHOPCART_SERVICE_BASE_URL}/${shopcart_id}/items`,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+
+        ajax.done(function(res){
+            clear_form_data()
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
+
+    // ****************************************
     // Search for a Shopcart
     // ****************************************
     $("#search-btn").on("click", function() {
@@ -211,7 +249,8 @@ $(function () {
                 .append($("<th>", { class: "col-md-2", text: "User ID" }))
                 .append($("<th>", { class: "col-md-2", text: "Name" }))
                 .append($("<th>", { class: "col-md-2", text: "Total Price" }))
-                .append($("<th>", { class: "col-md-2", text: "Status" }));
+                .append($("<th>", { class: "col-md-2", text: "Status" }))
+                .append($("<th>", { class: "col-md-2", text: "# Items" }));
     
             const tbody = $("<tbody>").appendTo(table);
             let firstOrder = null;
@@ -223,6 +262,7 @@ $(function () {
                 $("<td>").text(order.name).appendTo(row);
                 $("<td>").text(order.total_price).appendTo(row);
                 $("<td>").text(order.status).appendTo(row);
+                $("<td>").text(order.items.length).appendTo(row);
     
                 if (i === 0) firstOrder = order;
             });

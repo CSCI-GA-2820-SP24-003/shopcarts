@@ -104,3 +104,12 @@ Scenario: Search for a Shopcart by Name
     And I should not see "cc" in the results
     And I should not see "dd" in the results
 
+Scenario: Add an Item to a Shopcart
+    When I visit the "Home Page"
+    And I set the "Name" to "bb"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "bb" in the results
+    When I set the "Item" to "item1"
+    And I press the "Add" button
+    Then I should see the message "Success"
